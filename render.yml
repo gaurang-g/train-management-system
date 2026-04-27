@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: rail-reserve-app
+    env: docker
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: rail_reserve_db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: rail_reserve_db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: rail_reserve_db
+          property: password
