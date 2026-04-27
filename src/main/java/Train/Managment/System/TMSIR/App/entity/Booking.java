@@ -19,5 +19,9 @@ public class Booking {
     private int  seatsBooked;
     private LocalDate bookingDate;
 
+    private String  Source ;
+    private String Destination;
+
+
 
 }

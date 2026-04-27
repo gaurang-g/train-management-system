@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailReserve | Find Trains</title>
+  <style>
+    :root {
+        --primary: #2563eb;
+        --success: #22c55e;
+        --bg: #f8fafc;
+        --sidebar-bg: #1e293b;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        display: flex;
+        background-color: var(--bg);
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 260px;
+        height: 100vh;
+        background: var(--sidebar-bg);
+        color: white;
+        padding: 30px 20px;
+        position: fixed;
+    }
+
+    .sidebar h2 { color: var(--success); margin-bottom: 40px; }
+    .sidebar a {
+        display: block;
+        color: white;
+        text-decoration: none;
+        padding: 10px 0;
+        opacity: 0.8;
+    }
+    .sidebar a:hover { opacity: 1; color: var(--success); }
+
+    /* Main Content */
+    .main-content { margin-left: 300px; padding: 40px; width: calc(100% - 340px); }
+
+    .search-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgb(0 0 0 / 0.05);
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        margin-bottom: 30px;
+    }
+
+    .form-group { flex: 1; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: #64748b; }
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 12px 25px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Table Styling */
+    .results-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgb(0 0 0 / 0.05);
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #f1f5f9; padding: 15px; font-size: 0.9rem; color: #475569; }
+    td { padding: 15px; border-top: 1px solid #f1f5f9; }
+
+    .book-btn {
+        background: var(--success);
+        padding: 6px 15px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        color: white;
+        border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>RailReserve</h2>
+  <a href="index2.html">Dashboard</a>
+  <a href="search.html" style="opacity: 1; font-weight: bold;">Find Trains</a>
+</div>
+
+<div class="main-content">
+  <h1>Find Your Train</h1>
+
+  <div class="search-card">
+    <div class="form-group">
+      <label>From (Source)</label>
+      <input type="text" id="source" placeholder="e.g. Mumbai">
+    </div>
+    <div class="form-group">
+      <label>To (Destination)</label>
+      <input type="text" id="destination" placeholder="e.g. Delhi">
+    </div>
+    <button onclick="fetchTrains()">Search Trains</button>
+  </div>
+
+  <div class="results-card">
+    <table id="trainTable">
+      <thead>
+      <tr>
+        <th>Train Name</th>
+        <th>Train Number</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody id="trainData">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  async function fetchTrains() {
+      const src = document.getElementById('source').value;
+      const dest = document.getElementById('destination').value;
+      const tbody = document.getElementById('trainData');
+
+      try {
+          const response = await fetch(`http://localhost:8080/api/trains/search?source=${src}&destination=${dest}`);
+          const trains = await response.json();
+
+          tbody.innerHTML = "";
+
+          if (trains.length === 0) {
+              tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No trains found.</td></tr>";
+              return;
+          }
+
+          trains.forEach(t => {
+              tbody.innerHTML += `
+                  <tr>
+                      <td>${t.trainName}</td>
+                      <td>${t.trainNumber}</td>
+                      <td>
+                          <button class="book-btn" onclick="goToBooking('${t.trainNumber}')">Book Now</button>
+                      </td>
+                  </tr>`;
+          });
+      } catch (err) {
+          alert("Error connecting to server. Ensure Spring Boot is running.");
+      }
+  }
+
+  function goToBooking(trainNo,source,dest) {
+      //   train number to the reservation page via the URL
+      window.location.href = `booking.html?trainNo=${trainNo}&from=${source}&to=${dest}`;
+  }
+</script>
+</body>
+</html>

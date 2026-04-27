@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve | Official E-Ticket</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a; /* Navy Blue */
+            --accent: #f59e0b; /* Golden Orange */
+            --dark: #0f172a;
+            --success: #15803d;
+            --bg: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* The Ticket Shape */
+        .ticket-container {
+            background: white;
+            width: 750px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* Ticket Notch Effect */
+        .ticket-container::before, .ticket-container::after {
+            content: "";
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--bg);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .ticket-container::before { left: -20px; box-shadow: inset -5px 0 10px rgba(0,0,0,0.05); }
+        .ticket-container::after { right: -20px; box-shadow: inset 5px 0 10px rgba(0,0,0,0.05); }
+
+        /* Header Section */
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .logo-area h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+        .logo-area span { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; }
+
+        .pnr-box { text-align: right; }
+        .pnr-label { font-size: 10px; opacity: 0.8; margin-bottom: 2px; }
+        .pnr-value { font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; }
+
+        /* Main Content */
+        .main-body {
+            padding: 40px;
+            position: relative;
+            background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+            background-size: 20px 20px; /* Watermark dot pattern */
+        }
+
+        /* Route Display - Realistic Flight/Train Style */
+        .route-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .station-block { flex: 1; }
+        .station-block.right { text-align: right; }
+        .city-code { font-size: 32px; font-weight: 800; color: var(--primary); margin: 0; }
+        .city-name { font-size: 14px; color: #64748b; margin-top: -5px; }
+
+        .path-line {
+            flex: 1;
+            height: 2px;
+            background: #cbd5e1;
+            margin: 0 20px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .path-line::after {
+            content: "🚆";
+            background: #f8fafc;
+            padding: 0 10px;
+        }
+
+        /* Grid Information */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .info-item { margin-bottom: 15px; }
+        .label { font-size: 10px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+        .value { font-size: 15px; color: var(--dark); font-weight: 700; }
+
+        /* Transaction ID Bar */
+        .transaction-bar {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .barcode {
+            font-family: 'Libre Barcode 128', cursive;
+            font-size: 40px;
+            color: var(--dark);
+        }
+
+        /* Footer */
+        .footer {
+            background: #f1f5f9;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .status-badge {
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .no-print-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .no-print-btn:hover { background: var(--dark); }
+
+        @media print {
+            .no-print-btn { display: none; }
+            body { background: white; padding: 0; }
+            .ticket-container { box-shadow: none; border: 1px solid #eee; }
+            .header { -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ticket-container">
+    <div class="header">
+        <div class="logo-area">
+            <h1>RailReserve</h1>
+            <span>Ministry of Railways | Digital Division</span>
+        </div>
+        <div class="pnr-box">
+            <div class="pnr-label">PNR NUMBER</div>
+            <div class="pnr-value" id="pnr-val">0000000000</div>
+        </div>
+    </div>
+
+    <div class="main-body">
+        <div class="route-wrapper">
+            <div class="station-block">
+                <p class="city-code" id="src-code">SRC</p>
+                <p class="city-name" id="src-val">Source Station</p>
+            </div>
+            <div class="path-line"></div>
+            <div class="station-block right">
+                <p class="city-code" id="dest-code">DST</p>
+                <p class="city-name" id="dest-val">Destination Station</p>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Passenger</div>
+                <div class="value" id="name-val">Loading...</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Train Info</div>
+                <div class="value" id="train-val">00000 - Express</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Class / Seats</div>
+                <div class="value">Sleeper (SL) / <span id="seat-val">0</span></div>
+            </div>
+            <div class="info-item">
+                <div class="label">Date of Journey</div>
+                <div class="value" id="date-val">--/--/----</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Scheduled Arrival</div>
+                <div class="value" id="arrival-val">00:00</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Fare Status</div>
+                <div class="value" style="color: var(--success);">PAID (₹)</div>
+            </div>
+        </div>
+
+        <div class="transaction-bar">
+            <div class="barcode">1234567890</div>
+            <div style="text-align: right;">
+                <div class="label">Transaction ID</div>
+                <div class="value" id="trans-id" style="font-family: monospace; font-size: 14px;">TXN_000000000</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>
+            <span class="status-badge">VALID TICKET</span>
+            <span style="font-size: 11px; color: #64748b; margin-left: 10px;">Carry original ID proof during travel.</span>
+        </div>
+        <button class="no-print-btn" onclick="window.print()">Download PDF</button>
+    </div>
+</div>
+
+
+
+
+<script>
+
+    history.pushState(null, null, location.href);
+
+    window.onpopstate = function () {
+
+        history.go(1);
+    };
+
+
+    function resetBooking() {
+        localStorage.removeItem('bookingFinished');
+        localStorage.removeItem('lastBooking');
+        window.location.href = "index.html";
+    }
+</script>
+
+<script>
+    window.onload = function() {
+        const savedData = localStorage.getItem('lastBooking');
+
+        if (savedData) {
+            const data = JSON.parse(savedData);
+
+            // Populate dynamic data
+            document.getElementById('name-val').innerText = data.name;
+            document.getElementById('train-val').innerText = data.train + " - " + (data.trainName || "Express");
+            document.getElementById('seat-val').innerText = data.seats;
+            document.getElementById('pnr-val').innerText = data.pnr || "4429810352";
+            document.getElementById('date-val').innerText = data.date;
+            document.getElementById('src-val').innerText = data.source;
+            document.getElementById('dest-val').innerText = data.destination;
+            document.getElementById('arrival-val').innerText = data.arrivalTime;
+
+            // Create Station Codes
+            document.getElementById('src-code').innerText = data.source.substring(0, 3).toUpperCase();
+            document.getElementById('dest-code').innerText = data.destination.substring(0, 3).toUpperCase();
+
+            //  RANDOM TRANSACTION ID
+            const randomTxn = "TXN_" + Math.random().toString(36).substr(2, 9).toUpperCase();
+            document.getElementById('trans-id').innerText = randomTxn;
+
+            localStorage.setItem('bookingFinished', 'true');
+};
+        }
+    }
+</script>
+</body>
+</html>

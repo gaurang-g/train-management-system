@@ -70,7 +70,7 @@ public class trainServiceImpl {
     @Autowired
     private BookingRepository bookingRepository;
 @Transactional
-    public Booking bookTrain(String trainNumber, String passengerName, int seats) {
+    public Booking bookTrain(String trainNumber, String passengerName, int seats,String source , String destination) {
         train t = trainRepo.findByTrainNumber(trainNumber);
 
         if (t != null && t.getTotalSeats() >= seats) {
@@ -83,6 +83,9 @@ public class trainServiceImpl {
             newBooking.setTrainNumber(trainNumber);
             newBooking.setPassengerName(passengerName);
             newBooking.setSeatsBooked(seats);
+            newBooking.setSource(source);
+            newBooking.setDestination(destination);
+
             // If you have a date field, set it here:
              newBooking.setBookingDate(LocalDate.now());
 
@@ -95,4 +98,8 @@ public class trainServiceImpl {
     }
 
 
+    public train findByNumber(String trainNumber)
+    {
+        return trainRepo.findByTrainNumber(trainNumber);
+    }
 }

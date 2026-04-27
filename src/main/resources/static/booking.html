@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve | Admin Dashboard</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --bg: #f8fafc;
+            --dark: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg);
+            color: #1e293b;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background: #1e293b;
+            color: white;
+            padding: 30px 20px;
+            position: fixed;
+        }
+
+        .sidebar h2 { color: var(--success); margin-bottom: 40px; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 300px;
+            padding: 40px;
+            width: 100%;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { outline: none; border-color: var(--primary); }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        /* --- AUTH OVERLAY STYLES --- */
+        #authOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .auth-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--success);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>RailReserve</h2>
+    <p>Dashboard</p>
+    <p style="opacity: 0.6; font-size: 0.8rem;">System Status: Active</p>
+</div>
+
+<div class="main-content">
+    <h1>Ticket Reservation</h1>
+
+    <div class="card">
+        <div class="form-group">
+            <label>Passenger Full Name</label>
+            <input type="text" id="passengerName" placeholder="Enter traveler name">
+        </div>
+
+        <div class="form-group">
+            <label>Train Number</label>
+            <input type="text" id="trainNo" oninput="fetchTrainName()" placeholder="e.g. 12780">
+            <div id="trainSuggestion" style="color: blue; font-weight: bold; font-size: 0.8rem; margin-top: 5px;"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Number of Seats</label>
+            <input type="number" id="seats" placeholder="Max: 500">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>From Station</label>
+                <input type="text" id="source" placeholder="Mumbai">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>To Station</label>
+                <input type="text" id="destination" placeholder="Delhi">
+            </div>
+        </div>
+
+        <button onclick="bookTicket()">Confirm Reservation</button>
+        <div id="bookingStatus" style="display:none; margin-top:15px; color: red;"></div>
+    </div>
+</div>
+
+<div id="authOverlay">
+    <div class="auth-spinner"></div>
+    <h2 style="margin: 0;">Authenticating Request</h2>
+    <p style="opacity: 0.7; margin-top: 10px;">Connecting to RailReserve Secure Gateway...</p>
+</div>
+
+<script>
+    async function fetchTrainName() {
+       const trainNo = document.getElementById('trainNo').value;
+       const suggestionDiv = document.getElementById('trainSuggestion');
+
+       if (trainNo.length >= 2) {
+           try {
+               const response = await fetch(`http://localhost:8080/api/trains/by-number/${trainNo}`);
+               if (response.ok) {
+                   const trainData = await response.json();
+                   suggestionDiv.innerText = "Found: " + trainData.trainName;
+                   window.currentTrainName = trainData.trainName;
+                   window.currentArrival = trainData.arrival || trainData.arrivalTime || "Not Set";
+               } else {
+                   suggestionDiv.innerText = "Train not found";
+               }
+           } catch (err) {
+               console.error("Search error:", err);
+           }
+       }
+   }
+
+   async function bookTicket() {
+       const pName = document.getElementById('passengerName').value;
+       const source = document.getElementById('source').value;
+       const destination = document.getElementById('destination').value;
+       const trainNo = document.getElementById('trainNo').value;
+       const seats = document.getElementById('seats').value;
+       const statusDiv = document.getElementById('bookingStatus');
+
+       if(!source || !destination || !pName) {
+           alert("Please fill in all station and passenger details.");
+           return;
+       }
+
+       const trainName = `${source}_to_${destination}_Express`;
+       const url = `http://localhost:8080/api/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${trainName}`;
+
+       try {
+           const response = await fetch(url, {
+               method: 'POST',
+               headers: { 'Authorization': `Bearer ${localStorage.getItem('myJwtToken')}` }
+           });
+
+           if (response.ok) {
+               // --- TRIGGER AUTHENTICATION DELAY ---
+               document.getElementById('authOverlay').style.display = 'flex';
+
+               const bookingDetails = {
+                   name: pName,
+                   source: source,
+                   destination: destination,
+                   train: trainNo,
+                   trainName: window.currentTrainName || "Express Train",
+                   arrivalTime : window.currentArrival || "Not Available",
+                   seats: seats,
+                   pnr: "RR" + Math.floor(Math.random() * 900000 + 100000),
+                   date: new Date().toLocaleDateString('en-IN'),
+               };
+
+               localStorage.setItem('lastBooking', JSON.stringify(bookingDetails));
+
+
+               setTimeout(() => {
+                   window.location.href = "payments.html";
+               }, 3000);
+
+           } else {
+               statusDiv.style.display = "block";
+               statusDiv.innerText = "Booking failed. Please check backend logs.";
+           }
+       } catch (err) {
+           console.error("Error:", err);
+           alert("Connection error: Server is offline.");
+       }
+   }
+</script>
+
+</body>
+</html>
