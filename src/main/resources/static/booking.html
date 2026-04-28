@@ -156,14 +156,18 @@
     <p style="opacity: 0.7; margin-top: 10px;">Connecting to RailReserve Secure Gateway...</p>
 </div>
 
-<script>
+
+    // Global variable for your live backend
+    const API_BASE_URL = "https://train-management-system.onrender.com/api";
+
     async function fetchTrainName() {
        const trainNo = document.getElementById('trainNo').value;
        const suggestionDiv = document.getElementById('trainSuggestion');
 
        if (trainNo.length >= 2) {
            try {
-               const response = await fetch(`http://localhost:8080/api/trains/by-number/${trainNo}`);
+               // Updated to use live Render URL
+               const response = await fetch(`${API_BASE_URL}/trains/by-number/${trainNo}`);
                if (response.ok) {
                    const trainData = await response.json();
                    suggestionDiv.innerText = "Found: " + trainData.trainName;
@@ -192,7 +196,9 @@
        }
 
        const trainName = `${source}_to_${destination}_Express`;
-       const url = `http://localhost:8080/api/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${trainName}`;
+
+       // Updated to use live Render URL and template literal for clarity
+       const url = `${API_BASE_URL}/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${trainName}`;
 
        try {
            const response = await fetch(url, {
@@ -201,7 +207,6 @@
            });
 
            if (response.ok) {
-               // --- TRIGGER AUTHENTICATION DELAY ---
                document.getElementById('authOverlay').style.display = 'flex';
 
                const bookingDetails = {
@@ -218,7 +223,6 @@
 
                localStorage.setItem('lastBooking', JSON.stringify(bookingDetails));
 
-
                setTimeout(() => {
                    window.location.href = "payments.html";
                }, 3000);
@@ -229,7 +233,7 @@
            }
        } catch (err) {
            console.error("Error:", err);
-           alert("Connection error: Server is offline.");
+           alert("Connection error: The server might be sleeping. Please wait 50s and try again.");
        }
    }
 </script>

@@ -133,14 +133,24 @@
   </div>
 </div>
 
+
 <script>
+  // Global variable for your live backend
+  const API_BASE_URL = "https://train-management-system.onrender.com/api";
+
   async function fetchTrains() {
       const src = document.getElementById('source').value;
       const dest = document.getElementById('destination').value;
       const tbody = document.getElementById('trainData');
 
       try {
-          const response = await fetch(`http://localhost:8080/api/trains/search?source=${src}&destination=${dest}`);
+          // Updated to use the live Render URL
+          const response = await fetch(`${API_BASE_URL}/trains/search?source=${src}&destination=${dest}`);
+
+          if (!response.ok) {
+              throw new Error("Server responded with an error");
+          }
+
           const trains = await response.json();
 
           tbody.innerHTML = "";
@@ -156,17 +166,18 @@
                       <td>${t.trainName}</td>
                       <td>${t.trainNumber}</td>
                       <td>
-                          <button class="book-btn" onclick="goToBooking('${t.trainNumber}')">Book Now</button>
+                          <button class="book-btn" onclick="goToBooking('${t.trainNumber}', '${src}', '${dest}')">Book Now</button>
                       </td>
                   </tr>`;
           });
       } catch (err) {
-          alert("Error connecting to server. Ensure Spring Boot is running.");
+          console.error("Fetch error:", err);
+          alert("Error connecting to the cloud server. The free instance might be 'sleeping'—please wait 50 seconds and try again.");
       }
   }
 
-  function goToBooking(trainNo,source,dest) {
-      //   train number to the reservation page via the URL
+  function goToBooking(trainNo, source, dest) {
+      // Pass the details to the booking page
       window.location.href = `booking.html?trainNo=${trainNo}&from=${source}&to=${dest}`;
   }
 </script>
