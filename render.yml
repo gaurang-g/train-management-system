@@ -16,3 +16,6 @@ services:
         fromDatabase:
           name: rail_reserve_db
           property: password
+      - key: PORT
+        value: "8080"
+        healthCheckPath: /api
