@@ -5,9 +5,8 @@ services:
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: rail_reserve_db
-          property: connectionString
+        value: jdbc:postgresql://dpg-d7nhigjbc2fs738qav9g-a:5432/rail_reserve_db
+
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: rail_reserve_db
