@@ -270,33 +270,37 @@
 
 <script>
     window.onload = function() {
-        const savedData = localStorage.getItem('lastBooking');
+    const savedData = localStorage.getItem('lastBooking');
 
-        if (savedData) {
-            const data = JSON.parse(savedData);
+    if (savedData) {
+        const data = JSON.parse(savedData);
 
-            // Populate dynamic data
-            document.getElementById('name-val').innerText = data.name;
-            document.getElementById('train-val').innerText = data.train + " - " + (data.trainName || "Express");
-            document.getElementById('seat-val').innerText = data.seats;
-            document.getElementById('pnr-val').innerText = data.pnr || "4429810352";
-            document.getElementById('date-val').innerText = data.date;
-            document.getElementById('src-val').innerText = data.source;
-            document.getElementById('dest-val').innerText = data.destination;
-            document.getElementById('arrival-val').innerText = data.arrivalTime;
+        // Populate dynamic data with safe fallbacks
+        document.getElementById('name-val').innerText = data.name || "N/A";
+        document.getElementById('train-val').innerText = `${data.train} - ${data.trainName}`;
+        document.getElementById('seat-val').innerText = data.seats || "1";
+        document.getElementById('pnr-val').innerText = data.pnr;
+        document.getElementById('date-val').innerText = data.date;
+        document.getElementById('src-val').innerText = data.source;
+        document.getElementById('dest-val').innerText = data.destination;
+        document.getElementById('arrival-val').innerText = data.arrivalTime;
 
-            //  Station Codes
+        // Generate Station Codes (First 3 letters)
+        if(data.source && data.destination) {
             document.getElementById('src-code').innerText = data.source.substring(0, 3).toUpperCase();
             document.getElementById('dest-code').innerText = data.destination.substring(0, 3).toUpperCase();
-
-            //  RANDOM TRANSACTION ID
-            const randomTxn = "TXN_" + Math.random().toString(36).substr(2, 9).toUpperCase();
-            document.getElementById('trans-id').innerText = randomTxn;
-
-            localStorage.setItem('bookingFinished', 'true');
-};
         }
+
+        // Random Transaction ID for the UI
+        const randomTxn = "TXN_" + Math.random().toString(36).substr(2, 9).toUpperCase();
+        document.getElementById('trans-id').innerText = randomTxn;
+
+        // Cleanup (optional)
+        localStorage.setItem('bookingFinished', 'true');
+    } else {
+        console.error("No booking data found in localStorage!");
     }
+};
 </script>
 </body>
 </html>

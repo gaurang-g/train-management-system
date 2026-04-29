@@ -182,60 +182,58 @@
        }
    }
 
-   async function bookTicket() {
-       const pName = document.getElementById('passengerName').value;
-       const source = document.getElementById('source').value;
-       const destination = document.getElementById('destination').value;
-       const trainNo = document.getElementById('trainNo').value;
-       const seats = document.getElementById('seats').value;
-       const statusDiv = document.getElementById('bookingStatus');
 
-       if(!source || !destination || !pName) {
-           alert("Please fill in all station and passenger details.");
-           return;
-       }
+    async function bookTicket() {
+    const pName = document.getElementById('passengerName').value;
+    const source = document.getElementById('source').value;
+    const destination = document.getElementById('destination').value;
+    const trainNo = document.getElementById('trainNo').value;
+    const seats = document.getElementById('seats').value;
 
-       const trainName = `${source}_to_${destination}_Express`;
+    // 1. Check if we have the live data from the 'fetchTrainName' function
+    // If window.currentTrainName is empty, the user might have typed too fast.
+    const liveTrainName = window.currentTrainName || "Express Train";
+    const liveArrival = window.currentArrival || "Scheduled";
 
-       // Updated to use live Render URL and template literal for clarity
-       const url = `${API_BASE_URL}/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${trainName}`;
+    if(!source || !destination || !pName) {
+        alert("Please fill in all station and passenger details.");
+        return;
+    }
 
-       try {
-           const response = await fetch(url, {
-               method: 'POST',
-               headers: { 'Authorization': `Bearer ${localStorage.getItem('myJwtToken')}` }
-           });
+    const url = `https://train-management-system.onrender.com/api/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${source}_to_${destination}_Express`;
 
-           if (response.ok) {
-               document.getElementById('authOverlay').style.display = 'flex';
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('myJwtToken')}` }
+        });
 
-               const bookingDetails = {
-                   name: pName,
-                   source: source,
-                   destination: destination,
-                   train: trainNo,
-                   trainName: window.currentTrainName || "Express Train",
-                   arrivalTime : window.currentArrival || "Not Available",
-                   seats: seats,
-                   pnr: "RR" + Math.floor(Math.random() * 900000 + 100000),
-                   date: new Date().toLocaleDateString('en-IN'),
-               };
+        if (response.ok) {
+            document.getElementById('authOverlay').style.display = 'flex';
 
-               localStorage.setItem('lastBooking', JSON.stringify(bookingDetails));
+            // 2. SAVE EVERYTHING TO LOCALSTORAGE
+            const bookingDetails = {
+                name: pName,
+                source: source,
+                destination: destination,
+                train: trainNo,
+                trainName: liveTrainName, // Uses the data fetched from your Render API
+                arrivalTime : liveArrival,
+                seats: seats,
+                pnr: "RR" + Math.floor(Math.random() * 900000 + 100000),
+                date: new Date().toLocaleDateString('en-IN'),
+            };
 
-               setTimeout(() => {
-                   window.location.href = "payments.html";
-               }, 3000);
+            localStorage.setItem('lastBooking', JSON.stringify(bookingDetails));
 
-           } else {
-               statusDiv.style.display = "block";
-               statusDiv.innerText = "Booking failed. Please check backend logs.";
-           }
-       } catch (err) {
-           console.error("Error:", err);
-           alert("Connection error: The server might be sleeping. Please wait 50s and try again.");
-       }
-   }
+            setTimeout(() => {
+                window.location.href = "payments.html";
+            }, 3000);
+        }
+    } catch (err) {
+        console.error("Booking Error:", err);
+    }
+}
 </script>
 
 </body>
