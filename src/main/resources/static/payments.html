@@ -276,7 +276,10 @@
   }
 
 
-    if (localStorage.getItem('bookingFinished') === 'true') {
+    if (localStorage.getItem('bookingFinished') === 'true')
+     {
+     localStorage.removeItem('bookingFinished');
+
         window.location.replace("ticket.html");
     }
 
