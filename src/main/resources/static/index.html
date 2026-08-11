@@ -448,10 +448,9 @@
         </div>
     </section>
 </main>
-
 <script>
     // --- Configuration ---
-    const BASE_URL = 'http://localhost:8080';
+    const BASE_URL = 'https://train-management-system.onrender.com';
 
     // --- UI Logic Handlers ---
 
@@ -522,98 +521,92 @@
     // --- Backend API Handlers ---
 
     // 1. Handle Sign Up
-     // 1. Handle Sign Up
-async function handleSignUp(event) {
-    if (event) event.preventDefault();
+    async function handleSignUp(event) {
+        if (event) event.preventDefault();
 
-    const form = event.target;
-    const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+        const form = event.target;
+        const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
 
-    const fullName = inputs[0].value.trim();
-    const email = inputs[1].value.trim();
-    const mobile = inputs[2].value.trim();
-    const password = document.getElementById('regPass').value;
+        const fullName = inputs[0].value.trim();
+        const email = inputs[1].value.trim();
+        const mobile = inputs[2].value.trim();
+        const password = document.getElementById('regPass').value;
 
-    // Map role from the hidden input field
-    const selectedRole = document.getElementById('regRole').value;
-    const role = selectedRole === 'admin' ? 'ADMIN' : 'USER';
+        // Map role from the hidden input field
+        const selectedRole = document.getElementById('regRole').value;
+        const role = selectedRole === 'admin' ? 'ADMIN' : 'USER';
 
-    // Derive username from email (e.g., john@gmail.com -> john)
-    const username = email.split('@')[0];
+        // Derive username from email
+        const username = email.split('@')[0];
 
-    // Payload keys matching Spring Boot entity constraints (@NotBlank for mobileNumber)
-    const userData = {
-        username: username,
-        fullName: fullName,
-        email: email,
-        mobileNumber: mobile, // Fixed key from 'phone' to 'mobileNumber'
-        password: password,
-        role: role
-    };
+        // Payload keys matching Spring Boot entity constraints
+        const userData = {
+            username: username,
+            fullName: fullName,
+            email: email,
+            mobileNumber: mobile,
+            password: password,
+            role: role
+        };
 
-    try {
-        const response = await fetch(`https://train-management-system.onrender.com/api/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
+        try {
+            const response = await fetch(`${BASE_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
 
-        if (response.ok) {
-            alert("Account created successfully! Please log in.");
-            toggleFormView('login');
-        } else {
-            const errorText = await response.text();
-            alert("Registration failed: " + errorText);
-        }
-    } catch (error) {
-        console.error("Network Error:", error);
-        alert("Cannot connect to server. Check if Spring Boot is running on localhost:8080.");
-    }
-}
-
-   // 2. Handle Login
-async function handleLogin(event) {
-    if (event) event.preventDefault();
-
-    const form = event.target;
-    const userInput = form.querySelector('input[type="text"]').value.trim();
-    const passInput = document.getElementById('loginPass').value;
-
-    const params = new URLSearchParams({
-        username: userInput,
-        password: passInput
-    });
-
-    try {
-        const response = await fetch(`https://train-management-system.onrender.com/api/auth/login?${params.toString()}`, {
-            method: 'POST'
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-
-            if (data.status === "success" || response.status === 200) {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('currentUser', userInput);
-                window.location.href = "find.html";
+            if (response.ok) {
+                alert("Account created successfully! Please log in.");
+                toggleFormView('login');
             } else {
-                alert("Login failed: " + (data.message || "Invalid credentials"));
+                const errorText = await response.text();
+                alert("Registration failed: " + errorText);
             }
-        } else {
-            const errorText = await response.text();
-            alert("Login Failed: " + errorText);
+        } catch (error) {
+            console.error("Network Error:", error);
+            alert("Cannot connect to server. Check Render backend logs.");
         }
-    } catch (err) {
-        console.error("Connection Error:", err);
-        alert("Cannot connect to server. Check Spring Boot console.");
     }
-}
-    // Save logged-in user details after successful auth
-localStorage.setItem('currentUser', JSON.stringify({
-  email: userResponse.email, // e.g. "user123@gmail.com"
-  name: userResponse.name
-}));
-}
+
+    // 2. Handle Login
+    async function handleLogin(event) {
+        if (event) event.preventDefault();
+
+        const form = event.target;
+        const userInput = form.querySelector('input[type="text"]').value.trim();
+        const passInput = document.getElementById('loginPass').value;
+
+        const params = new URLSearchParams({
+            username: userInput,
+            password: passInput
+        });
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/auth/login?${params.toString()}`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                if (data.status === "success" || response.status === 200) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('currentUser', userInput);
+                    window.location.href = "find.html";
+                } else {
+                    alert("Login failed: " + (data.message || "Invalid credentials"));
+                }
+            } else {
+                const errorText = await response.text();
+                alert("Login Failed: " + errorText);
+            }
+        } catch (err) {
+            console.error("Connection Error:", err);
+            alert("Cannot connect to server. Check Spring Boot console or Render logs.");
+        }
+    }
+
     // Attach event listeners to forms on DOM load
     document.addEventListener("DOMContentLoaded", () => {
         const loginForm = document.querySelector("#loginView form");
