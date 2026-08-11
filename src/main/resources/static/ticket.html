@@ -553,36 +553,89 @@
 </div>
 
 <script>
-    /*window.onload = () => {
-      // 1. Load dynamic booking payload from localStorage
-      const bookingData = JSON.parse(localStorage.getItem('lastBooking'));
+    const BASE_URL = 'https://train-management-system.onrender.com';
 
-      if (bookingData) {
-        if (bookingData.pnr) {
-          document.getElementById('t-pnr').innerText = bookingData.pnr;
-          document.getElementById('t-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${bookingData.pnr}`;
-        }
-        if (bookingData.trainName) document.getElementById('t-train-name').innerText = bookingData.trainName;
-        if (bookingData.source) {
-          document.getElementById('t-src-name').innerText = bookingData.source;
-          document.getElementById('t-src-code').innerText = bookingData.source.substring(0, 3).toUpperCase();
-        }
-        if (bookingData.destination) {
-          document.getElementById('t-dst-name').innerText = bookingData.destination;
-          document.getElementById('t-dst-code').innerText = bookingData.destination.substring(0, 3).toUpperCase();
-        }
-        if (bookingData.date) document.getElementById('t-date').innerText = bookingData.date;
-        if (bookingData.time) document.getElementById('t-time').innerText = bookingData.time;
-        if (bookingData.passenger) document.getElementById('t-passenger').innerText = bookingData.passenger;
-        if (bookingData.seat) document.getElementById('t-seat').innerText = bookingData.seat;
-        if (bookingData.fare) document.getElementById('t-fare').innerText = `₹${bookingData.fare}`;
+    // Helper function: Reads localStorage safely without crashing on plain text
+    function safeGetStorage(key) {
+      const item = localStorage.getItem(key);
+      if (!item) return null;
+      try {
+        return JSON.parse(item);
+      } catch (e) {
+        return item;
+      }
+    }
 
-        // Auto-fill input field in modal if email exists
-        if (bookingData.email) {
-          document.getElementById('emailInput').value = bookingData.email;
+    document.addEventListener("DOMContentLoaded", async () => {
+      // 1. Safely retrieve stored data
+      let bookingData = safeGetStorage('lastBooking') || {};
+      const currentUserData = safeGetStorage('currentUser');
+
+      // 2. Fetch via URL ?pnr= parameter if arriving from Dashboard
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPnr = urlParams.get('pnr');
+
+      if (urlPnr) {
+        try {
+          const res = await fetch(`${BASE_URL}/api/bookings/${urlPnr}`);
+          if (res.ok) {
+            bookingData = await res.json();
+          }
+        } catch (err) {
+          console.warn("Backend API offline, falling back to stored data.", err);
         }
       }
-    };
+
+      // 3. Resolve Passenger Name
+      let passengerName = "Guest Passenger";
+
+      if (typeof currentUserData === 'string') {
+        passengerName = currentUserData;
+      } else if (currentUserData && typeof currentUserData === 'object') {
+        passengerName = currentUserData.name || currentUserData.username || currentUserData.email || passengerName;
+      }
+
+      if (bookingData && typeof bookingData === 'object') {
+        passengerName = bookingData.passenger || bookingData.passengerName || bookingData.name || passengerName;
+      }
+
+      // 4. Resolve field mappings across standard Spring Boot / JSON patterns
+      const pnr = bookingData.pnr || bookingData.pnrNumber || urlPnr || "RR-882190";
+      const trainName = bookingData.trainName || bookingData.train || "Mumbai Express";
+      const trainNo = bookingData.trainNumber || bookingData.trainNo || bookingData.trainId || "12951";
+      const source = bookingData.source || bookingData.fromStation || bookingData.sourceStation || bookingData.from || "Mumbai Central";
+      const destination = bookingData.destination || bookingData.toStation || bookingData.destinationStation || bookingData.to || "New Delhi";
+      const date = bookingData.date || bookingData.journeyDate || bookingData.travelDate || "12 Aug 2026";
+
+      // Expanded time key matching
+      const time = bookingData.time || bookingData.departureTime || bookingData.depTime || bookingData.departure_time || bookingData.boardingTime || bookingData.trainTime || "16:55 HRS";
+
+      const seat = bookingData.seat || bookingData.seatNumber || bookingData.berth || "H1 - 12 (Coupe)";
+      const fare = bookingData.fare || bookingData.price || bookingData.totalFare || bookingData.amount || "1,250.00";
+
+      // 5. Inject values into DOM elements
+      document.getElementById('t-passenger').innerText = passengerName;
+      document.getElementById('t-pnr').innerText = pnr;
+      document.getElementById('t-train-name').innerText = trainName;
+      document.getElementById('t-train-no').innerText = trainNo.toString().startsWith('#') ? trainNo : `#${trainNo}`;
+
+      document.getElementById('t-src-name').innerText = source;
+      document.getElementById('t-src-code').innerText = source.substring(0, 3).toUpperCase();
+
+      document.getElementById('t-dst-name').innerText = destination;
+      document.getElementById('t-dst-code').innerText = destination.substring(0, 3).toUpperCase();
+
+      document.getElementById('t-date').innerText = date;
+      document.getElementById('t-time').innerText = time;
+      document.getElementById('t-seat').innerText = seat;
+      document.getElementById('t-fare').innerText = fare.toString().startsWith('₹') ? fare : `₹${fare}`;
+
+      // 6. Update QR Code image source
+      const qrImg = document.getElementById('t-qr');
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pnr + '-' + passengerName)}`;
+      }
+    });
 
     function openEmailModal() {
       document.getElementById('emailModal').style.display = 'flex';
@@ -603,17 +656,24 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sending...`;
       btn.disabled = true;
 
-      // Build payload dynamically from active UI elements
+      // Complete payload matching backend expectations
       const payload = {
         email: email,
+        toEmail: email,
         pnr: document.getElementById('t-pnr').innerText,
+        passenger: document.getElementById('t-passenger').innerText,
+        passengerName: document.getElementById('t-passenger').innerText,
         trainName: document.getElementById('t-train-name').innerText,
         source: document.getElementById('t-src-name').innerText,
-        destination: document.getElementById('t-dst-name').innerText
+        destination: document.getElementById('t-dst-name').innerText,
+        date: document.getElementById('t-date').innerText,
+        time: document.getElementById('t-time').innerText,
+        seat: document.getElementById('t-seat').innerText,
+        fare: document.getElementById('t-fare').innerText
       };
 
       try {
-        const response = await fetch('http://localhost:8080/api/tickets/send-email', {
+        const response = await fetch(`${BASE_URL}/api/tickets/send-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -632,148 +692,11 @@
         }
       } catch (error) {
         console.error("Email dispatch failed:", error);
-        alert("Failed to send email. Ensure your Spring Boot backend is active.");
+        alert("Failed to send email. Ensure backend server is reachable.");
         btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
         btn.disabled = false;
       }
-    }*/
-
-
-
-  // Helper function: Reads localStorage safely without crashing on plain text
-  function safeGetStorage(key) {
-    const item = localStorage.getItem(key);
-    if (!item) return null;
-    try {
-      return JSON.parse(item);
-    } catch (e) {
-      return item; // Return raw string if item is not JSON
     }
-  }
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    // 1. Safely retrieve stored data
-    let bookingData = safeGetStorage('lastBooking') || {};
-    const currentUserData = safeGetStorage('currentUser');
-
-    // 2. Fetch via URL ?pnr= parameter if arriving from Dashboard
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlPnr = urlParams.get('pnr');
-
-    if (urlPnr) {
-      try {
-        const res = await fetch(`http://localhost:8080/api/bookings/${urlPnr}`);
-        if (res.ok) {
-          bookingData = await res.json();
-        }
-      } catch (err) {
-        console.warn("Backend API offline, falling back to stored data.", err);
-      }
-    }
-
-    // 3. Resolve Passenger Name (handles plain string or JSON object)
-    let passengerName = "Guest Passenger";
-
-    if (typeof currentUserData === 'string') {
-      passengerName = currentUserData;
-    } else if (currentUserData && typeof currentUserData === 'object') {
-      passengerName = currentUserData.name || currentUserData.username || currentUserData.email || passengerName;
-    }
-
-    if (bookingData && typeof bookingData === 'object') {
-      passengerName = bookingData.passenger || bookingData.passengerName || bookingData.name || passengerName;
-    }
-
-    // 4. Resolve field mappings across standard Spring Boot naming patterns
-    const pnr = bookingData.pnr || bookingData.pnrNumber || urlPnr || "RR-882190";
-    const trainName = bookingData.trainName || bookingData.train || "Mumbai Express";
-    const trainNo = bookingData.trainNumber || bookingData.trainNo || bookingData.trainId || "12951";
-    const source = bookingData.source || bookingData.fromStation || bookingData.sourceStation || bookingData.from || "Mumbai Central";
-    const destination = bookingData.destination || bookingData.toStation || bookingData.destinationStation || bookingData.to || "New Delhi";
-    const date = bookingData.date || bookingData.journeyDate || bookingData.travelDate || "12 Aug 2026";
-    const time = bookingData.time || bookingData.departureTime || bookingData.boardingTime || "16:55 HRS";
-    const seat = bookingData.seat || bookingData.seatNumber || bookingData.berth || "H1 - 12 (Coupe)";
-    const fare = bookingData.fare || bookingData.price || bookingData.totalFare || bookingData.amount || "1,250.00";
-
-    // 5. Inject values into DOM elements
-    document.getElementById('t-passenger').innerText = passengerName;
-    document.getElementById('t-pnr').innerText = pnr;
-    document.getElementById('t-train-name').innerText = trainName;
-    document.getElementById('t-train-no').innerText = trainNo.toString().startsWith('#') ? trainNo : `#${trainNo}`;
-
-    document.getElementById('t-src-name').innerText = source;
-    document.getElementById('t-src-code').innerText = source.substring(0, 3).toUpperCase();
-
-    document.getElementById('t-dst-name').innerText = destination;
-    document.getElementById('t-dst-code').innerText = destination.substring(0, 3).toUpperCase();
-
-    document.getElementById('t-date').innerText = date;
-    document.getElementById('t-time').innerText = time;
-    document.getElementById('t-seat').innerText = seat;
-    document.getElementById('t-fare').innerText = fare.toString().startsWith('₹') ? fare : `₹${fare}`;
-
-    // 6. Update QR Code image source
-    const qrImg = document.getElementById('t-qr');
-    if (qrImg) {
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pnr + '-' + passengerName)}`;
-    }
-  });
-
-  function openEmailModal() {
-    document.getElementById('emailModal').style.display = 'flex';
-  }
-
-  function closeEmailModal() {
-    document.getElementById('emailModal').style.display = 'none';
-  }
-
-  async function sendTicketEmail() {
-    const email = document.getElementById('emailInput').value.trim();
-    if (!email) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-
-    const btn = document.getElementById('sendEmailBtn');
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sending...`;
-    btn.disabled = true;
-
-    const payload = {
-      email: email,
-      pnr: document.getElementById('t-pnr').innerText,
-      passenger: document.getElementById('t-passenger').innerText,
-      trainName: document.getElementById('t-train-name').innerText,
-      source: document.getElementById('t-src-name').innerText,
-      destination: document.getElementById('t-dst-name').innerText
-    };
-
-    try {
-      const response = await fetch('https://train-management-system.onrender.com/api/tickets/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        btn.innerHTML = `<i class="fa-solid fa-check"></i> Sent!`;
-        setTimeout(() => {
-          closeEmailModal();
-          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
-          btn.disabled = false;
-          alert(`E-Ticket successfully sent to ${email}`);
-        }, 1000);
-      } else {
-        throw new Error("Server rejected request");
-      }
-    } catch (error) {
-      console.error("Email dispatch failed:", error);
-      alert("Failed to send email. Ensure backend server is reachable.");
-      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
-      btn.disabled = false;
-    }
-  }
-</script>
-
 </script>
 </body>
 </html>
