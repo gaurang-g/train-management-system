@@ -1,185 +1,534 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RailReserve | Find Trains</title>
-  <style>
-    :root {
-        --primary: #2563eb;
-        --success: #22c55e;
-        --bg: #f8fafc;
-        --sidebar-bg: #1e293b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve | NextGen Express Finder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-glow: #3b82f6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.25);
 
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        display: flex;
-        background-color: var(--bg);
-    }
+            /* Dark Glassmorphism Variables */
+            --bg-color: #030712;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --sidebar-bg: rgba(11, 19, 41, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-placeholder: #64748b;
+            --orb-opacity: 0.5;
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+        }
 
-    /* Sidebar */
-    .sidebar {
-        width: 260px;
-        height: 100vh;
-        background: var(--sidebar-bg);
-        color: white;
-        padding: 30px 20px;
-        position: fixed;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
 
-    .sidebar h2 { color: var(--success); margin-bottom: 40px; }
-    .sidebar a {
-        display: block;
-        color: white;
-        text-decoration: none;
-        padding: 10px 0;
-        opacity: 0.8;
-    }
-    .sidebar a:hover { opacity: 1; color: var(--success); }
+        body {
+            min-height: 100vh;
+            width: 100vw;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-    /* Main Content */
-    .main-content { margin-left: 300px; padding: 40px; width: calc(100% - 340px); }
+        /* Ambient Animated Orbs */
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: var(--orb-opacity);
+            animation: float 20s ease-in-out infinite alternate;
+            z-index: 1;
+            pointer-events: none;
+        }
 
-    .search-card {
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgb(0 0 0 / 0.05);
-        display: flex;
-        gap: 15px;
-        align-items: flex-end;
-        margin-bottom: 30px;
-    }
+        .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 100%); top: -150px; left: -100px; }
+        .orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, #8b5cf6 0%, #6d28d9 100%); bottom: -100px; right: 10%; animation-delay: -5s; }
 
-    .form-group { flex: 1; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: #64748b; }
-    input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        box-sizing: border-box;
-    }
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(60px, 50px) scale(1.08); }
+            100% { transform: translate(-30px, 80px) scale(0.95); }
+        }
 
-    button {
-        padding: 12px 25px;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-    }
+        .layout-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
 
-    /* Table Styling */
-    .results-card {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgb(0 0 0 / 0.05);
-    }
+        /* Modern Glass Sidebar */
+        .sidebar {
+            width: 270px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(25px);
+            border-right: 1px solid var(--glass-border);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
 
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { background: #f1f5f9; padding: 15px; font-size: 0.9rem; color: #475569; }
-    td { padding: 15px; border-top: 1px solid #f1f5f9; }
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 40px;
+        }
 
-    .book-btn {
-        background: var(--success);
-        padding: 6px 15px;
-        font-size: 0.8rem;
-        text-decoration: none;
-        color: white;
-        border-radius: 4px;
-    }
-  </style>
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #2563eb, #6366f1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--text-sub);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: var(--hover-bg);
+            color: var(--text-main);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--primary-glow);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 270px;
+            padding: 40px 50px;
+            width: calc(100% - 270px);
+            overflow-y: auto;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .header-title p { color: var(--text-sub); font-size: 0.9rem; }
+
+        /* Search Panel */
+        .search-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .form-group { position: relative; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.825rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 13px 16px 13px 44px;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder { color: var(--input-placeholder); }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-search {
+            padding: 13px 30px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 48px;
+        }
+
+        .btn-search:hover { opacity: 0.95; transform: translateY(-1px); }
+
+        /* Results Table Panel */
+        .results-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .table-header-bar {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header-bar h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 16px 28px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        td {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--hover-bg); }
+
+        .train-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .train-badge i {
+            color: var(--primary-glow);
+        }
+
+        .train-num {
+            font-family: monospace;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        .book-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--success-glow);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .book-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            color: var(--text-sub);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: var(--text-sub);
+            opacity: 0.5;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            .search-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <h2>RailReserve</h2>
-  <a href="index2.html">Dashboard</a>
-  <a href="search.html" style="opacity: 1; font-weight: bold;">Find Trains</a>
+<div class="ambient-orb orb-1"></div>
+<div class="ambient-orb orb-2"></div>
+
+<div class="layout-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand-header">
+                <div class="brand-logo"><i class="fa-solid fa-train"></i></div>
+                <span class="brand-title">RailReserve</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="alltrains.html" class="nav-link active">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Find Trains</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            &copy; 2026 RailReserve Portal
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-title">
+                <h1>Find Available Trains</h1>
+                <p>Search real-time express schedules and seat allocations</p>
+            </div>
+        </header>
+
+        <!-- Search Form Card -->
+        <section class="search-card">
+            <div class="search-grid">
+                <div class="form-group">
+                    <label>From (Source)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" id="source" placeholder="e.g. Mumbai">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>To (Destination)</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-location-crosshairs"></i>
+                        <input type="text" id="destination" placeholder="e.g. Delhi">
+                    </div>
+                </div>
+
+                <button class="btn-search" onclick="fetchTrains()">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Search Trains</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Table Results Card -->
+        <section class="results-card">
+            <div class="table-header-bar">
+                <h2>Available Express Routes</h2>
+            </div>
+
+            <table id="trainTable">
+                <thead>
+                <tr>
+                    <th>Train Name</th>
+                    <th>Train Number</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="trainData">
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-train-subway"></i>
+                            <p>Enter source and destination above to check live routes.</p>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
 </div>
-
-<div class="main-content">
-  <h1>Find Your Train</h1>
-
-  <div class="search-card">
-    <div class="form-group">
-      <label>From (Source)</label>
-      <input type="text" id="source" placeholder="e.g. Mumbai">
-    </div>
-    <div class="form-group">
-      <label>To (Destination)</label>
-      <input type="text" id="destination" placeholder="e.g. Delhi">
-    </div>
-    <button onclick="fetchTrains()">Search Trains</button>
-  </div>
-
-  <div class="results-card">
-    <table id="trainTable">
-      <thead>
-      <tr>
-        <th>Train Name</th>
-        <th>Train Number</th>
-        <th>Action</th>
-      </tr>
-      </thead>
-      <tbody id="trainData">
-      </tbody>
-    </table>
-  </div>
-</div>
-
 
 <script>
-  // Global variable for your live backend
-  const API_BASE_URL = "https://train-management-system.onrender.com/api";
+    // Config: Pointing to Localhost for local dev, or fallback to Render URL
 
-  async function fetchTrains() {
-      const src = document.getElementById('source').value;
-      const dest = document.getElementById('destination').value;
-      const tbody = document.getElementById('trainData');
+    const API_BASE_URL = "https://train-management-system.onrender.com/api";
 
-      try {
-          // Updated to use the live Render URL
-          const response = await fetch(`${API_BASE_URL}/trains/search?source=${src}&destination=${dest}`);
+    async function fetchTrains() {
+        const src = document.getElementById('source').value.trim();
+        const dest = document.getElementById('destination').value.trim();
+        const tbody = document.getElementById('trainData');
 
-          if (!response.ok) {
-              throw new Error("Server responded with an error");
-          }
+        if (!src || !dest) {
+            alert("Please enter both source and destination!");
+            return;
+        }
 
-          const trains = await response.json();
+        try {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan='3'>
+                  <div class="empty-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Searching live train database...</p>
+                  </div>
+                </td>
+              </tr>`;
 
-          tbody.innerHTML = "";
+            const response = await fetch(`${API_BASE_URL}/trains/search?source=${encodeURIComponent(src)}&destination=${encodeURIComponent(dest)}`);
 
-          if (trains.length === 0) {
-              tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No trains found.</td></tr>";
-              return;
-          }
+            if (!response.ok) {
+                throw new Error("Server responded with an error");
+            }
 
-          trains.forEach(t => {
-              tbody.innerHTML += `
+            const trains = await response.json();
+
+            tbody.innerHTML = "";
+
+            if (trains.length === 0) {
+                tbody.innerHTML = `
                   <tr>
-                      <td>${t.trainName}</td>
-                      <td>${t.trainNumber}</td>
-                      <td>
-                          <button class="book-btn" onclick="goToBooking('${t.trainNumber}', '${src}', '${dest}')">Book Now</button>
-                      </td>
+                    <td colspan='3'>
+                      <div class="empty-state">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <p>No express routes found between "${src}" and "${dest}".</p>
+                      </div>
+                    </td>
                   </tr>`;
-          });
-      } catch (err) {
-          console.error("Fetch error:", err);
-          alert("Error connecting to the cloud server. The free instance might be 'sleeping'—please wait 50 seconds and try again.");
-      }
-  }
+                return;
+            }
 
-  function goToBooking(trainNo, source, dest) {
-      // Pass the details to the booking page
-      window.location.href = `booking.html?trainNo=${trainNo}&from=${source}&to=${dest}`;
-  }
+            trains.forEach(t => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                          <div class="train-badge">
+                            <i class="fa-solid fa-train"></i>
+                            <span>${t.trainName}</span>
+                          </div>
+                        </td>
+                        <td><span class="train-num">${t.trainNumber}</span></td>
+                        <td>
+                            <button class="book-btn" onclick="goToBooking('${t.trainNumber}', '${src}', '${dest}')">
+                              <i class="fa-solid fa-ticket"></i> Book Now
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+        } catch (err) {
+            console.error("Fetch error:", err);
+            tbody.innerHTML = `
+              <tr>
+                <td colspan='3'>
+                  <div class="empty-state">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i>
+                    <p>Cannot connect to Spring Boot. Make sure Localhost is running on port 8080.</p>
+                  </div>
+                </td>
+              </tr>`;
+        }
+    }
+
+    function goToBooking(trainNo, source, dest) {
+        window.location.href = `booking.html?trainNo=${trainNo}&from=${source}&to=${dest}`;
+    }
 </script>
 </body>
 </html>

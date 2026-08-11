@@ -25,6 +25,9 @@ public class User
     private String role;
     private String fullName;
     private String email;
+    @Column(nullable = false, unique = true)
+    @NotBlank(message = "Mobile is require")
+    private String mobileNumber;
 
 
 }

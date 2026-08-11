@@ -1,306 +1,779 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RailReserve | Official E-Ticket</title>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>RailReserve | E-Ticket Confirmed</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1e3a8a; /* Navy Blue */
-            --accent: #f59e0b; /* Golden Orange */
-            --dark: #0f172a;
-            --success: #15803d;
-            --bg: #e2e8f0;
+          --neon-cyan: #06b6d4;
+          --neon-cyan-glow: rgba(6, 182, 212, 0.35);
+          --neon-indigo: #6366f1;
+          --neon-indigo-glow: rgba(99, 102, 241, 0.35);
+          --neon-emerald: #10b981;
+          --neon-emerald-glow: rgba(16, 185, 129, 0.35);
+          --neon-amber: #f59e0b;
+
+          --bg-dark: #030712;
+          --glass-card: rgba(15, 23, 42, 0.75);
+          --glass-border: rgba(255, 255, 255, 0.08);
+          --text-main: #f8fafc;
+          --text-sub: #94a3b8;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+          background-color: var(--bg-dark);
+          color: var(--text-main);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 20px;
+          position: relative;
         }
 
-        /* The Ticket Shape */
-        .ticket-container {
-            background: white;
-            width: 750px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #cbd5e1;
+        /* Ambient Glows */
+        .ambient-orb {
+          position: fixed;
+          border-radius: 50%;
+          filter: blur(120px);
+          z-index: 1;
+          pointer-events: none;
+        }
+        .orb-cyan { width: 450px; height: 450px; background: radial-gradient(circle, var(--neon-cyan), transparent 70%); top: -100px; left: -100px; }
+        .orb-emerald { width: 400px; height: 400px; background: radial-gradient(circle, var(--neon-emerald), transparent 70%); bottom: -100px; right: -100px; }
+
+        /* Main Ticket Container */
+        .ticket-wrapper {
+          position: relative;
+          z-index: 10;
+          width: 100%;
+          max-width: 900px;
         }
 
-        /* Ticket Notch Effect */
-        .ticket-container::before, .ticket-container::after {
-            content: "";
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: var(--bg);
-            border-radius: 50%;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 10;
-        }
-        .ticket-container::before { left: -20px; box-shadow: inset -5px 0 10px rgba(0,0,0,0.05); }
-        .ticket-container::after { right: -20px; box-shadow: inset 5px 0 10px rgba(0,0,0,0.05); }
-
-        /* Header Section */
-        .header {
-            background: var(--primary);
-            color: white;
-            padding: 30px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 4px solid var(--accent);
+        /* Quick Action Toolbar */
+        .action-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          gap: 15px;
+          flex-wrap: wrap;
         }
 
-        .logo-area h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -1px; }
-        .logo-area span { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; }
+        .btn-group { display: flex; gap: 12px; }
 
-        .pnr-box { text-align: right; }
-        .pnr-label { font-size: 10px; opacity: 0.8; margin-bottom: 2px; }
-        .pnr-value { font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: bold; }
-
-        /* Main Content */
-        .main-body {
-            padding: 40px;
-            position: relative;
-            background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
-            background-size: 20px 20px; /* Watermark dot pattern */
+        .btn {
+          padding: 12px 20px;
+          border-radius: 12px;
+          border: 1px solid var(--glass-border);
+          background: rgba(15, 23, 42, 0.8);
+          color: var(--text-main);
+          font-weight: 600;
+          font-size: 0.85rem;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: all 0.25s ease;
+          backdrop-filter: blur(10px);
         }
 
-        /* Route Display - Realistic Flight/Train Style */
-        .route-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 12px;
-            border: 1px solid #f1f5f9;
+        .btn:hover {
+          border-color: var(--neon-cyan);
+          box-shadow: 0 0 15px var(--neon-cyan-glow);
+          transform: translateY(-2px);
         }
 
-        .station-block { flex: 1; }
-        .station-block.right { text-align: right; }
-        .city-code { font-size: 32px; font-weight: 800; color: var(--primary); margin: 0; }
-        .city-name { font-size: 14px; color: #64748b; margin-top: -5px; }
-
-        .path-line {
-            flex: 1;
-            height: 2px;
-            background: #cbd5e1;
-            margin: 0 20px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .path-line::after {
-            content: "🚆";
-            background: #f8fafc;
-            padding: 0 10px;
+        .btn-primary {
+          background: linear-gradient(135deg, var(--neon-indigo), #4f46e5);
+          border: none;
+          box-shadow: 0 5px 15px var(--neon-indigo-glow);
         }
 
-        /* Grid Information */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
+        .btn-primary:hover {
+          opacity: 0.95;
+          box-shadow: 0 8px 20px var(--neon-indigo-glow);
         }
 
-        .info-item { margin-bottom: 15px; }
-        .label { font-size: 10px; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-        .value { font-size: 15px; color: var(--dark); font-weight: 700; }
-
-        /* Transaction ID Bar */
-        .transaction-bar {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px dashed #cbd5e1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Ticket Card */
+        .ticket-card {
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(25px);
+          border: 1px solid var(--glass-border);
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+          display: grid;
+          grid-template-columns: 1fr 260px;
+          position: relative;
         }
 
-        .barcode {
-            font-family: 'Libre Barcode 128', cursive;
-            font-size: 40px;
-            color: var(--dark);
+        /* Print Watermark (Hidden on web UI, active during print) */
+        .print-watermark {
+          display: none;
         }
 
-        /* Footer */
-        .footer {
-            background: #f1f5f9;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #e2e8f0;
+        /* Left Coupon Area */
+        .ticket-main {
+          padding: 35px;
+          border-right: 2px dashed rgba(255, 255, 255, 0.1);
+          position: relative;
         }
+
+        /* Semi-circle Cutouts for Ticket Stub Effect */
+        .ticket-main::before, .ticket-main::after {
+          content: '';
+          position: absolute;
+          right: -14px;
+          width: 26px;
+          height: 26px;
+          background: var(--bg-dark);
+          border-radius: 50%;
+          z-index: 15;
+        }
+        .ticket-main::before { top: -13px; border-bottom: 1px solid var(--glass-border); }
+        .ticket-main::after { bottom: -13px; border-top: 1px solid var(--glass-border); }
+
+        .ticket-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 25px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid var(--glass-border);
+        }
+
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 800;
+          font-size: 1.2rem;
+        }
+        .brand i { color: var(--neon-cyan); }
 
         .status-badge {
-            background: var(--success);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 800;
+          background: rgba(16, 185, 129, 0.15);
+          color: var(--neon-emerald);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
 
-        .no-print-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+        /* Route Visualizer */
+        .route-container {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin: 25px 0;
+          background: rgba(0, 0, 0, 0.3);
+          padding: 20px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .no-print-btn:hover { background: var(--dark); }
+        .station { flex: 1; }
+        .station.right { text-align: right; }
+        .station-code { font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: 1px; }
+        .station-city { font-size: 0.85rem; color: var(--text-sub); }
 
+        .route-path {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 0 15px;
+        }
+        .train-line {
+          width: 100%;
+          height: 2px;
+          background: linear-gradient(90deg, var(--neon-cyan), var(--neon-indigo), var(--neon-emerald));
+          position: relative;
+          margin: 8px 0;
+        }
+        .train-icon {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: var(--bg-dark);
+          padding: 0 8px;
+          color: var(--neon-cyan);
+          font-size: 0.9rem;
+        }
+
+        /* Details Grid */
+        .details-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+          margin-top: 25px;
+        }
+
+        .info-block label {
+          display: block;
+          font-size: 0.7rem;
+          color: var(--text-sub);
+          text-transform: uppercase;
+          margin-bottom: 4px;
+          letter-spacing: 0.5px;
+        }
+        .info-block span {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text-main);
+        }
+
+        /* Right Stub Area */
+        .ticket-stub {
+          background: rgba(2, 6, 23, 0.6);
+          padding: 35px 25px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: space-between;
+          text-align: center;
+        }
+
+        .qr-container {
+          background: #fff;
+          padding: 12px;
+          border-radius: 16px;
+          box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+        }
+
+        .qr-code {
+          width: 130px;
+          height: 130px;
+          display: block;
+        }
+
+        .stub-pnr {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: var(--neon-cyan);
+          letter-spacing: 1px;
+        }
+
+        /* Email Modal */
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(3, 7, 18, 0.85);
+          backdrop-filter: blur(15px);
+          z-index: 100;
+          display: none;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .modal-card {
+          background: rgba(15, 23, 42, 0.9);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          padding: 30px;
+          width: 90%;
+          max-width: 420px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+          position: relative;
+        }
+
+        .modal-card h3 { margin-bottom: 8px; font-size: 1.2rem; }
+        .modal-card p { color: var(--text-sub); font-size: 0.85rem; margin-bottom: 20px; }
+
+        .input-group {
+          position: relative;
+          margin-bottom: 20px;
+        }
+        .input-group input {
+          width: 100%;
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid var(--glass-border);
+          padding: 14px 14px 14px 42px;
+          border-radius: 10px;
+          color: #fff;
+          outline: none;
+          font-size: 0.9rem;
+        }
+        .input-group input:focus {
+          border-color: var(--neon-cyan);
+          box-shadow: 0 0 0 3px var(--neon-cyan-glow);
+        }
+        .input-group i {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-sub);
+        }
+
+        /* Print Custom Styles with Central Train Logo & Vibrant Highlights */
         @media print {
-            .no-print-btn { display: none; }
-            body { background: white; padding: 0; }
-            .ticket-container { box-shadow: none; border: 1px solid #eee; }
-            .header { -webkit-print-color-adjust: exact; }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          body {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            padding: 0;
+          }
+
+          .ambient-orb, .action-bar, .modal-overlay {
+            display: none !important;
+          }
+
+          .ticket-wrapper {
+            max-width: 100% !important;
+          }
+
+          .ticket-card {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 2px solid #06b6d4 !important;
+            border-radius: 20px !important;
+            box-shadow: none !important;
+            grid-template-columns: 1fr 240px !important;
+            position: relative;
+            overflow: hidden !important;
+          }
+
+          /* Background Centered Train Watermark & Neon Glow Highlights */
+          .print-watermark {
+            display: flex !important;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            height: 320px;
+            align-items: center;
+            justify-content: center;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.14;
+          }
+
+          .print-watermark i {
+            font-size: 16rem;
+            background: linear-gradient(135deg, #06b6d4, #6366f1, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 30px rgba(6, 182, 212, 0.7));
+          }
+
+          /* Stack elements above watermark */
+          .ticket-main {
+            position: relative;
+            z-index: 2;
+            border-right: 2px dashed #06b6d4 !important;
+          }
+
+          .ticket-stub {
+            position: relative;
+            z-index: 2;
+            background: #f8fafc !important;
+          }
+
+          /* Bright Highlights in Print Layout */
+          .brand i { color: #06b6d4 !important; }
+          .station-code { color: #030712 !important; }
+
+          .route-container {
+            background: #f0fdf4 !important;
+            border: 1px solid #6366f1 !important;
+            box-shadow: inset 0 0 10px rgba(99, 102, 241, 0.1) !important;
+          }
+
+          .train-line {
+            background: linear-gradient(90deg, #06b6d4, #6366f1, #10b981) !important;
+          }
+
+          .train-icon {
+            background: #f0fdf4 !important;
+            color: #06b6d4 !important;
+          }
+
+          .status-badge {
+            background: #dcfce7 !important;
+            color: #059669 !important;
+            border: 1px solid #10b981 !important;
+          }
+
+          .info-block label { color: #64748b !important; }
+          .info-block span { color: #0f172a !important; }
+          .stub-pnr { color: #06b6d4 !important; }
+        }
+
+        @media (max-width: 768px) {
+          .ticket-card { grid-template-columns: 1fr; }
+          .ticket-stub { border-top: 2px dashed rgba(255, 255, 255, 0.1); }
+          .ticket-main::before, .ticket-main::after { display: none; }
+          .details-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
-<div class="ticket-container">
-    <div class="header">
-        <div class="logo-area">
-            <h1>RailReserve</h1>
-            <span>Ministry of Railways | Digital Division</span>
-        </div>
-        <div class="pnr-box">
-            <div class="pnr-label">PNR NUMBER</div>
-            <div class="pnr-value" id="pnr-val">0000000000</div>
+<div class="ambient-orb orb-cyan"></div>
+<div class="ambient-orb orb-emerald"></div>
+
+<div class="ticket-wrapper">
+
+    <!-- Top Action Bar -->
+    <div class="action-bar">
+        <a href="dashboard.html" class="btn"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <div class="btn-group">
+            <button class="btn" onclick="openEmailModal()"><i class="fa-solid fa-envelope"></i> Email Ticket</button>
+            <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / PDF</button>
         </div>
     </div>
 
-    <div class="main-body">
-        <div class="route-wrapper">
-            <div class="station-block">
-                <p class="city-code" id="src-code">SRC</p>
-                <p class="city-name" id="src-val">Source Station</p>
+    <!-- Ticket Card -->
+    <div class="ticket-card" id="printableTicket">
+
+        <!-- Print Watermark Icon (Visible only in background during printing) -->
+        <div class="print-watermark">
+            <i class="fa-solid fa-train"></i>
+        </div>
+
+        <!-- Main Ticket Body -->
+        <div class="ticket-main">
+            <div class="ticket-header">
+                <div class="brand">
+                    <i class="fa-solid fa-train"></i>
+                    <span>RailReserve</span>
+                </div>
+                <div class="status-badge">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>CONFIRMED</span>
+                </div>
             </div>
-            <div class="path-line"></div>
-            <div class="station-block right">
-                <p class="city-code" id="dest-code">DST</p>
-                <p class="city-name" id="dest-val">Destination Station</p>
+
+            <!-- Route Section -->
+            <div class="route-container">
+                <div class="station">
+                    <div class="station-code" id="t-src-code">BCT</div>
+                    <div class="station-city" id="t-src-name">Mumbai Central</div>
+                </div>
+                <div class="route-path">
+                    <span style="font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase;" id="t-train-no">#12951</span>
+                    <div class="train-line">
+                        <i class="fa-solid fa-train-subway train-icon"></i>
+                    </div>
+                    <span style="font-size: 0.7rem; color: var(--neon-cyan); font-weight: 600;" id="t-class">AC 1st Class</span>
+                </div>
+                <div class="station right">
+                    <div class="station-code" id="t-dst-code">NDLS</div>
+                    <div class="station-city" id="t-dst-name">New Delhi</div>
+                </div>
+            </div>
+
+            <!-- Ticket Details -->
+            <div class="details-grid">
+                <div class="info-block">
+                    <label>Train Name</label>
+                    <span id="t-train-name">Mumbai Express</span>
+                </div>
+                <div class="info-block">
+                    <label>Date of Journey</label>
+                    <span id="t-date">12 Aug 2026</span>
+                </div>
+                <div class="info-block">
+                    <label>Boarding Time</label>
+                    <span id="t-time">16:55 HRS</span>
+                </div>
+                <div class="info-block">
+                    <label>Passenger</label>
+                    <span id="t-passenger"></span>
+                </div>
+                <div class="info-block">
+                    <label>Berth / Coach</label>
+                    <span id="t-seat">H1 - 12 (Coupe)</span>
+                </div>
+                <div class="info-block">
+                    <label>Total Fare</label>
+                    <span id="t-fare" style="color: var(--neon-emerald);">₹1,250.00</span>
+                </div>
             </div>
         </div>
 
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="label">Passenger</div>
-                <div class="value" id="name-val">Loading...</div>
+        <!-- Right Stub -->
+        <div class="ticket-stub">
+            <div>
+                <div style="font-size: 0.65rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 4px;">PNR Number</div>
+                <div class="stub-pnr" id="t-pnr">RR-882190</div>
             </div>
-            <div class="info-item">
-                <div class="label">Train Info</div>
-                <div class="value" id="train-val">00000 - Express</div>
+
+            <div class="qr-container">
+                <!-- Dynamic QR generated via API -->
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RR-882190-CONFIRMED" alt="QR Code" class="qr-code" id="t-qr">
             </div>
-            <div class="info-item">
-                <div class="label">Class / Seats</div>
-                <div class="value">Sleeper (SL) / <span id="seat-val">0</span></div>
-            </div>
-            <div class="info-item">
-                <div class="label">Date of Journey</div>
-                <div class="value" id="date-val">--/--/----</div>
-            </div>
-            <div class="info-item">
-                <div class="label">Scheduled Arrival</div>
-                <div class="value" id="arrival-val">00:00</div>
-            </div>
-            <div class="info-item">
-                <div class="label">Fare Status</div>
-                <div class="value" style="color: var(--success);">PAID (₹)</div>
+
+            <div style="font-size: 0.65rem; color: var(--text-sub);">
+                Scan at automatic gates for platform entry.
             </div>
         </div>
 
-        <div class="transaction-bar">
-            <div class="barcode">1234567890</div>
-            <div style="text-align: right;">
-                <div class="label">Transaction ID</div>
-                <div class="value" id="trans-id" style="font-family: monospace; font-size: 14px;">TXN_000000000</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        <div>
-            <span class="status-badge">VALID TICKET</span>
-            <span style="font-size: 11px; color: #64748b; margin-left: 10px;">Carry original ID proof during travel.</span>
-        </div>
-        <button class="no-print-btn" onclick="window.print()">Download PDF</button>
     </div>
 </div>
 
+<!-- Email Modal -->
+<div class="modal-overlay" id="emailModal">
+    <div class="modal-card">
+        <h3>Email E-Ticket</h3>
+        <p>Send a digital copy to your registered email address.</p>
 
+        <div class="input-group">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="emailInput" placeholder="name@example.com">
+        </div>
 
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" style="flex: 1;" onclick="closeEmailModal()">Cancel</button>
+            <button class="btn btn-primary" style="flex: 1;" id="sendEmailBtn" onclick="sendTicketEmail()">
+                <i class="fa-solid fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </div>
+</div>
 
 <script>
+    /*window.onload = () => {
+      // 1. Load dynamic booking payload from localStorage
+      const bookingData = JSON.parse(localStorage.getItem('lastBooking'));
 
-    history.pushState(null, null, location.href);
+      if (bookingData) {
+        if (bookingData.pnr) {
+          document.getElementById('t-pnr').innerText = bookingData.pnr;
+          document.getElementById('t-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${bookingData.pnr}`;
+        }
+        if (bookingData.trainName) document.getElementById('t-train-name').innerText = bookingData.trainName;
+        if (bookingData.source) {
+          document.getElementById('t-src-name').innerText = bookingData.source;
+          document.getElementById('t-src-code').innerText = bookingData.source.substring(0, 3).toUpperCase();
+        }
+        if (bookingData.destination) {
+          document.getElementById('t-dst-name').innerText = bookingData.destination;
+          document.getElementById('t-dst-code').innerText = bookingData.destination.substring(0, 3).toUpperCase();
+        }
+        if (bookingData.date) document.getElementById('t-date').innerText = bookingData.date;
+        if (bookingData.time) document.getElementById('t-time').innerText = bookingData.time;
+        if (bookingData.passenger) document.getElementById('t-passenger').innerText = bookingData.passenger;
+        if (bookingData.seat) document.getElementById('t-seat').innerText = bookingData.seat;
+        if (bookingData.fare) document.getElementById('t-fare').innerText = `₹${bookingData.fare}`;
 
-    window.onpopstate = function () {
-
-        history.go(1);
+        // Auto-fill input field in modal if email exists
+        if (bookingData.email) {
+          document.getElementById('emailInput').value = bookingData.email;
+        }
+      }
     };
 
-
-    function resetBooking() {
-        localStorage.removeItem('bookingFinished');
-        localStorage.removeItem('lastBooking');
-        window.location.href = "index.html";
+    function openEmailModal() {
+      document.getElementById('emailModal').style.display = 'flex';
     }
+
+    function closeEmailModal() {
+      document.getElementById('emailModal').style.display = 'none';
+    }
+
+    async function sendTicketEmail() {
+      const email = document.getElementById('emailInput').value.trim();
+      if (!email) {
+        alert("Please enter a valid email address.");
+        return;
+      }
+
+      const btn = document.getElementById('sendEmailBtn');
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sending...`;
+      btn.disabled = true;
+
+      // Build payload dynamically from active UI elements
+      const payload = {
+        email: email,
+        pnr: document.getElementById('t-pnr').innerText,
+        trainName: document.getElementById('t-train-name').innerText,
+        source: document.getElementById('t-src-name').innerText,
+        destination: document.getElementById('t-dst-name').innerText
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/api/tickets/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> Sent!`;
+          setTimeout(() => {
+            closeEmailModal();
+            btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
+            btn.disabled = false;
+            alert(`E-Ticket successfully sent to ${email}`);
+          }, 1000);
+        } else {
+          throw new Error("Server rejected request");
+        }
+      } catch (error) {
+        console.error("Email dispatch failed:", error);
+        alert("Failed to send email. Ensure your Spring Boot backend is active.");
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
+        btn.disabled = false;
+      }
+    }*/
+
+
+
+  // Helper function: Reads localStorage safely without crashing on plain text
+  function safeGetStorage(key) {
+    const item = localStorage.getItem(key);
+    if (!item) return null;
+    try {
+      return JSON.parse(item);
+    } catch (e) {
+      return item; // Return raw string if item is not JSON
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Safely retrieve stored data
+    let bookingData = safeGetStorage('lastBooking') || {};
+    const currentUserData = safeGetStorage('currentUser');
+
+    // 2. Fetch via URL ?pnr= parameter if arriving from Dashboard
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlPnr = urlParams.get('pnr');
+
+    if (urlPnr) {
+      try {
+        const res = await fetch(`http://localhost:8080/api/bookings/${urlPnr}`);
+        if (res.ok) {
+          bookingData = await res.json();
+        }
+      } catch (err) {
+        console.warn("Backend API offline, falling back to stored data.", err);
+      }
+    }
+
+    // 3. Resolve Passenger Name (handles plain string or JSON object)
+    let passengerName = "Guest Passenger";
+
+    if (typeof currentUserData === 'string') {
+      passengerName = currentUserData;
+    } else if (currentUserData && typeof currentUserData === 'object') {
+      passengerName = currentUserData.name || currentUserData.username || currentUserData.email || passengerName;
+    }
+
+    if (bookingData && typeof bookingData === 'object') {
+      passengerName = bookingData.passenger || bookingData.passengerName || bookingData.name || passengerName;
+    }
+
+    // 4. Resolve field mappings across standard Spring Boot naming patterns
+    const pnr = bookingData.pnr || bookingData.pnrNumber || urlPnr || "RR-882190";
+    const trainName = bookingData.trainName || bookingData.train || "Mumbai Express";
+    const trainNo = bookingData.trainNumber || bookingData.trainNo || bookingData.trainId || "12951";
+    const source = bookingData.source || bookingData.fromStation || bookingData.sourceStation || bookingData.from || "Mumbai Central";
+    const destination = bookingData.destination || bookingData.toStation || bookingData.destinationStation || bookingData.to || "New Delhi";
+    const date = bookingData.date || bookingData.journeyDate || bookingData.travelDate || "12 Aug 2026";
+    const time = bookingData.time || bookingData.departureTime || bookingData.boardingTime || "16:55 HRS";
+    const seat = bookingData.seat || bookingData.seatNumber || bookingData.berth || "H1 - 12 (Coupe)";
+    const fare = bookingData.fare || bookingData.price || bookingData.totalFare || bookingData.amount || "1,250.00";
+
+    // 5. Inject values into DOM elements
+    document.getElementById('t-passenger').innerText = passengerName;
+    document.getElementById('t-pnr').innerText = pnr;
+    document.getElementById('t-train-name').innerText = trainName;
+    document.getElementById('t-train-no').innerText = trainNo.toString().startsWith('#') ? trainNo : `#${trainNo}`;
+
+    document.getElementById('t-src-name').innerText = source;
+    document.getElementById('t-src-code').innerText = source.substring(0, 3).toUpperCase();
+
+    document.getElementById('t-dst-name').innerText = destination;
+    document.getElementById('t-dst-code').innerText = destination.substring(0, 3).toUpperCase();
+
+    document.getElementById('t-date').innerText = date;
+    document.getElementById('t-time').innerText = time;
+    document.getElementById('t-seat').innerText = seat;
+    document.getElementById('t-fare').innerText = fare.toString().startsWith('₹') ? fare : `₹${fare}`;
+
+    // 6. Update QR Code image source
+    const qrImg = document.getElementById('t-qr');
+    if (qrImg) {
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pnr + '-' + passengerName)}`;
+    }
+  });
+
+  function openEmailModal() {
+    document.getElementById('emailModal').style.display = 'flex';
+  }
+
+  function closeEmailModal() {
+    document.getElementById('emailModal').style.display = 'none';
+  }
+
+  async function sendTicketEmail() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    const btn = document.getElementById('sendEmailBtn');
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sending...`;
+    btn.disabled = true;
+
+    const payload = {
+      email: email,
+      pnr: document.getElementById('t-pnr').innerText,
+      passenger: document.getElementById('t-passenger').innerText,
+      trainName: document.getElementById('t-train-name').innerText,
+      source: document.getElementById('t-src-name').innerText,
+      destination: document.getElementById('t-dst-name').innerText
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/api/tickets/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Sent!`;
+        setTimeout(() => {
+          closeEmailModal();
+          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
+          btn.disabled = false;
+          alert(`E-Ticket successfully sent to ${email}`);
+        }, 1000);
+      } else {
+        throw new Error("Server rejected request");
+      }
+    } catch (error) {
+      console.error("Email dispatch failed:", error);
+      alert("Failed to send email. Ensure backend server is reachable.");
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
+      btn.disabled = false;
+    }
+  }
 </script>
 
-<script>
-    window.onload = function() {
-    const savedData = localStorage.getItem('lastBooking');
-
-    if (savedData) {
-        const data = JSON.parse(savedData);
-
-        // Populate dynamic data with safe fallbacks
-        document.getElementById('name-val').innerText = data.name || "N/A";
-        document.getElementById('train-val').innerText = `${data.train} - ${data.trainName}`;
-        document.getElementById('seat-val').innerText = data.seats || "1";
-        document.getElementById('pnr-val').innerText = data.pnr;
-        document.getElementById('date-val').innerText = data.date;
-        document.getElementById('src-val').innerText = data.source;
-        document.getElementById('dest-val').innerText = data.destination;
-        document.getElementById('arrival-val').innerText = data.arrivalTime;
-
-        // Generate Station Codes (First 3 letters)
-        if(data.source && data.destination) {
-            document.getElementById('src-code').innerText = data.source.substring(0, 3).toUpperCase();
-            document.getElementById('dest-code').innerText = data.destination.substring(0, 3).toUpperCase();
-        }
-
-        // Random Transaction ID for the UI
-        const randomTxn = "TXN_" + Math.random().toString(36).substr(2, 9).toUpperCase();
-        document.getElementById('trans-id').innerText = randomTxn;
-
-        // Cleanup (optional)
-        localStorage.setItem('bookingFinished', 'true');
-    } else {
-        console.error("No booking data found in localStorage!");
-    }
-};
 </script>
 </body>
 </html>

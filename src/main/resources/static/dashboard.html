@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve | User Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+          --neon-cyan: #06b6d4;
+          --neon-cyan-glow: rgba(6, 182, 212, 0.35);
+          --neon-indigo: #6366f1;
+          --neon-indigo-glow: rgba(99, 102, 241, 0.35);
+          --neon-emerald: #10b981;
+          --neon-emerald-glow: rgba(16, 185, 129, 0.35);
+          --neon-amber: #f59e0b;
+          --neon-red: #ef4444;
+
+          --bg-dark: #030712;
+          --glass-card: rgba(15, 23, 42, 0.75);
+          --glass-border: rgba(255, 255, 255, 0.08);
+          --text-main: #f8fafc;
+          --text-sub: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+          background-color: var(--bg-dark);
+          color: var(--text-main);
+          min-height: 100vh;
+          padding-bottom: 60px;
+          position: relative;
+        }
+
+        /* Ambient Glow Orbs */
+        .ambient-orb {
+          position: fixed;
+          border-radius: 50%;
+          filter: blur(120px);
+          z-index: 1;
+          pointer-events: none;
+        }
+        .orb-cyan { width: 450px; height: 450px; background: radial-gradient(circle, var(--neon-cyan), transparent 70%); top: -100px; left: -100px; }
+        .orb-emerald { width: 400px; height: 400px; background: radial-gradient(circle, var(--neon-emerald), transparent 70%); bottom: -100px; right: -100px; }
+
+        /* Navigation Bar */
+        .navbar {
+          position: relative;
+          z-index: 10;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 40px;
+          background: rgba(15, 23, 42, 0.6);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--glass-border);
+        }
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-weight: 800;
+          font-size: 1.3rem;
+          text-decoration: none;
+          color: var(--text-main);
+        }
+        .brand i { color: var(--neon-cyan); }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-link {
+          color: var(--text-sub);
+          text-decoration: none;
+          font-size: 0.9rem;
+          font-weight: 600;
+          transition: all 0.25s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+          color: var(--neon-cyan);
+        }
+
+        /* Layout Wrapper */
+        .dashboard-wrapper {
+          position: relative;
+          z-index: 10;
+          max-width: 1200px;
+          margin: 30px auto;
+          padding: 0 20px;
+        }
+
+        /* User Profile Header Banner */
+        .user-banner {
+          background: var(--glass-card);
+          backdrop-filter: blur(25px);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          padding: 25px 30px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 30px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .user-info { display: flex; align-items: center; gap: 18px; }
+        .avatar {
+          width: 55px;
+          height: 55px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--neon-cyan), var(--neon-indigo));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          font-weight: 800;
+          color: #fff;
+          box-shadow: 0 0 15px var(--neon-cyan-glow);
+        }
+        .user-details h2 { font-size: 1.3rem; font-weight: 700; }
+        .user-details p { color: var(--text-sub); font-size: 0.85rem; margin-top: 2px; }
+
+        /* Quick Metrics Cards */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 20px;
+          margin-bottom: 35px;
+        }
+        .stat-card {
+          background: var(--glass-card);
+          backdrop-filter: blur(20px);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 20px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.2rem;
+        }
+        .stat-val { font-size: 1.4rem; font-weight: 800; }
+        .stat-lbl { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Section Tabs & Headers */
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+        .section-title {
+          font-size: 1.2rem;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .section-title i { color: var(--neon-cyan); }
+
+        /* Bookings & Schedules Grid Layout */
+        .grid-container {
+          display: grid;
+          grid-template-columns: 1.4fr 1fr;
+          gap: 25px;
+        }
+
+        /* Ticket Cards List */
+        .booking-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .booking-card {
+          background: var(--glass-card);
+          backdrop-filter: blur(20px);
+          border: 1px solid var(--glass-border);
+          border-radius: 18px;
+          padding: 20px 24px;
+          transition: all 0.25s ease;
+          position: relative;
+        }
+        .booking-card:hover {
+          border-color: rgba(6, 182, 212, 0.4);
+          transform: translateY(-2px);
+        }
+        .b-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--glass-border);
+          margin-bottom: 15px;
+        }
+        .b-pnr { font-family: 'JetBrains Mono', monospace; color: var(--neon-cyan); font-weight: 700; }
+        .badge {
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 0.7rem;
+          font-weight: 700;
+        }
+        .badge-confirmed { background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-cancelled { background: rgba(239, 68, 68, 0.15); color: var(--neon-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .b-route {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 15px;
+        }
+        .b-station-code { font-size: 1.2rem; font-weight: 800; }
+        .b-station-name { font-size: 0.75rem; color: var(--text-sub); }
+
+        .b-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 15px;
+          padding-top: 12px;
+          border-top: 1px solid var(--glass-border);
+        }
+
+        .btn-sm {
+          padding: 8px 14px;
+          border-radius: 8px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          border: 1px solid var(--glass-border);
+          background: rgba(0,0,0,0.3);
+          color: var(--text-main);
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s;
+        }
+        .btn-sm:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+        .btn-danger:hover { border-color: var(--neon-red); color: var(--neon-red); }
+
+        /* Schedule Panel Sidebar */
+        .schedule-panel {
+          background: var(--glass-card);
+          backdrop-filter: blur(20px);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          padding: 24px;
+        }
+
+        .search-box {
+          width: 100%;
+          background: rgba(0,0,0,0.4);
+          border: 1px solid var(--glass-border);
+          border-radius: 10px;
+          padding: 10px 14px;
+          color: #fff;
+          font-size: 0.85rem;
+          margin-bottom: 15px;
+          outline: none;
+        }
+        .search-box:focus { border-color: var(--neon-cyan); }
+
+        .schedule-item {
+          padding: 14px 0;
+          border-bottom: 1px solid var(--glass-border);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .schedule-item:last-child { border-bottom: none; }
+        .s-time { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--neon-cyan); }
+        .s-name { font-size: 0.85rem; font-weight: 700; }
+        .s-route { font-size: 0.75rem; color: var(--text-sub); }
+
+        @media (max-width: 900px) {
+          .grid-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ambient-orb orb-cyan"></div>
+<div class="ambient-orb orb-emerald"></div>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="index.html" class="brand">
+        <i class="fa-solid fa-train"></i>
+        <span>RailReserve</span>
+    </a>
+    <div class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="ticket.html" class="nav-link">My Ticket</a>
+    </div>
+</nav>
+
+<div class="dashboard-wrapper">
+
+    <!-- User Banner -->
+    <div class="user-banner">
+        <div class="user-info">
+            <div class="avatar">GB</div>
+            <div class="user-details">
+                <h2 id="u-name">Welcome To Dashboard</h2>
+                <p id="u-email"><i class="fa-solid fa-envelope"></i> xxxxx@gmail.com</p>
+            </div>
+        </div>
+        <a href="booking.html" class="btn-sm"><i class="fa-solid fa-plus"></i> New Booking</a>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--neon-cyan);">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
+            <div>
+                <div class="stat-val" id="count-bookings">1</div>
+                <div class="stat-lbl">Active Bookings</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald);">
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+            </div>
+            <div>
+                <div class="stat-val">₹1,250.00</div>
+                <div class="stat-lbl">Total Spent</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--neon-indigo);">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+                <div class="stat-val">12 Aug</div>
+                <div class="stat-lbl">Next Departure</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="grid-container">
+
+        <!-- My Bookings Section -->
+        <div>
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-suitcase"></i> My Bookings</div>
+            </div>
+
+            <div class="booking-list" id="bookingsContainer">
+                <!-- Dynamically Injected or Default Booking Cards -->
+            </div>
+        </div>
+
+        <!-- Live Train Schedules Section -->
+        <div>
+            <div class="section-header">
+                <div class="section-title"><i class="fa-solid fa-calendar-days"></i> Train Schedules</div>
+            </div>
+
+            <div class="schedule-panel">
+                <input type="text" id="scheduleSearch" class="search-box" placeholder="Search train or route..." onkeyup="filterSchedules()">
+
+                <div id="scheduleList">
+                    <div class="schedule-item">
+                        <div>
+                            <div class="s-name">Mumbai Express (#12951)</div>
+                            <div class="s-route">Mumbai Central ➔ New Delhi</div>
+                        </div>
+                        <div class="s-time">16:55 HRS</div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div>
+                            <div class="s-name">Rajdhani Express (#12431)</div>
+                            <div class="s-route">Trivandrum ➔ Hazrat Nizamuddin</div>
+                        </div>
+                        <div class="s-time">19:15 HRS</div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div>
+                            <div class="s-name">Vande Bharat (#20901)</div>
+                            <div class="s-route">Mumbai Central ➔ Gandhinagar</div>
+                        </div>
+                        <div class="s-time">06:10 HRS</div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div>
+                            <div class="s-name">Deccan Queen (#12123)</div>
+                            <div class="s-route">Mumbai CSMT ➔ Pune Junction</div>
+                        </div>
+                        <div class="s-time">17:10 HRS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    window.onload = () => {
+      renderUserBookings();
+    };
+
+    function renderUserBookings() {
+      const container = document.getElementById('bookingsContainer');
+      const bookingData = JSON.parse(localStorage.getItem('lastBooking'));
+
+      let bookingsArr = [];
+
+      // If active booking exists in localStorage, render it
+      if (bookingData) {
+        bookingsArr.push({
+          pnr: bookingData.pnr || "RR-882190",
+          trainName: bookingData.trainName || "Mumbai Express",
+          source: bookingData.source || "Mumbai Central",
+          destination: bookingData.destination || "New Delhi",
+          date: bookingData.date || "12 Aug 2026",
+          time: bookingData.time || "16:55 HRS",
+          status: "CONFIRMED",
+          fare: bookingData.fare || "1,250.00"
+        });
+      } else {
+        // Fallback default mock booking
+        bookingsArr.push({
+          pnr: "RR-882190",
+          trainName: "Mumbai Express",
+          source: "Mumbai Central",
+          destination: "New Delhi",
+          date: "12 Aug 2026",
+          time: "16:55 HRS",
+          status: "CONFIRMED",
+          fare: "1,250.00"
+        });
+      }
+
+      document.getElementById('count-bookings').innerText = bookingsArr.length;
+
+      container.innerHTML = bookingsArr.map(b => `
+        <div class="booking-card">
+          <div class="b-top">
+            <span class="b-pnr">${b.pnr}</span>
+            <span class="badge badge-confirmed">${b.status}</span>
+          </div>
+
+          <div class="b-route">
+            <div>
+              <div class="b-station-code">${b.source.substring(0, 3).toUpperCase()}</div>
+              <div class="b-station-name">${b.source}</div>
+            </div>
+            <div style="text-align: center; color: var(--neon-cyan);">
+              <i class="fa-solid fa-arrow-right-long"></i>
+              <div style="font-size: 0.7rem; color: var(--text-sub); margin-top: 4px;">${b.date} • ${b.time}</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="b-station-code">${b.destination.substring(0, 3).toUpperCase()}</div>
+              <div class="b-station-name">${b.destination}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-sub);">
+            <span>Train: <strong style="color: #fff;">${b.trainName}</strong></span>
+            <span>Fare: <strong style="color: var(--neon-emerald);">₹${b.fare}</strong></span>
+          </div>
+
+          <div class="b-actions">
+            <button class="btn-sm btn-danger" onclick="cancelBooking()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+            <a href="ticket.html" class="btn-sm"><i class="fa-solid fa-ticket"></i> View Ticket</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function cancelBooking() {
+      if (confirm("Are you sure you want to cancel this booking?")) {
+        localStorage.removeItem('lastBooking');
+        alert("Booking cancelled successfully. Refund initialized.");
+        renderUserBookings();
+      }
+    }
+
+    function filterSchedules() {
+      const query = document.getElementById('scheduleSearch').value.toLowerCase();
+      const items = document.querySelectorAll('.schedule-item');
+
+      items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    }
+</script>
+</body>
+</html>

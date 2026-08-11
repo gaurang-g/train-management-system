@@ -1,91 +1,269 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RailReserve | Admin Dashboard</title>
+    <title>RailReserve | Confirm Booking</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
-            --secondary: #64748b;
-            --success: #22c55e;
-            --bg: #f8fafc;
-            --dark: #1e293b;
+            --primary-glow: #3b82f6;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.25);
+
+            --bg-color: #030712;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --sidebar-bg: rgba(11, 19, 41, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --input-placeholder: #64748b;
+            --orb-opacity: 0.5;
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            --hover-bg: rgba(255, 255, 255, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
+            min-height: 100vh;
+            width: 100vw;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
-            background-color: var(--bg);
-            color: #1e293b;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* Sidebar Styling */
-        .sidebar {
-            width: 260px;
-            height: 100vh;
-            background: #1e293b;
-            color: white;
-            padding: 30px 20px;
+        /* Ambient Orbs */
+        .ambient-orb {
             position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: var(--orb-opacity);
+            animation: float 20s ease-in-out infinite alternate;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        .sidebar h2 { color: var(--success); margin-bottom: 40px; }
+        .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #3b82f6 0%, #1d4ed8 100%); top: -150px; left: -100px; }
+        .orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, #8b5cf6 0%, #6d28d9 100%); bottom: -100px; right: 10%; animation-delay: -5s; }
 
-        /* Main Content */
-        .main-content {
-            margin-left: 300px;
-            padding: 40px;
+        @keyframes float {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(60px, 50px) scale(1.08); }
+            100% { transform: translate(-30px, 80px) scale(0.95); }
+        }
+
+        .layout-wrapper {
+            display: flex;
             width: 100%;
+            height: 100vh;
+            position: relative;
+            z-index: 10;
         }
 
-        .card {
-            background: white;
-            padding: 30px;
+        /* Sidebar */
+        .sidebar {
+            width: 270px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(25px);
+            border-right: 1px solid var(--glass-border);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 40px;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #2563eb, #6366f1);
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            max-width: 500px;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
         }
 
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
 
-        input {
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--text-sub);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: var(--hover-bg);
+            color: var(--text-main);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--primary-glow);
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        /* Main Section */
+        .main-content {
+            margin-left: 270px;
+            padding: 40px 50px;
+            width: calc(100% - 270px);
+            overflow-y: auto;
+        }
+
+        .top-header {
+            margin-bottom: 30px;
+        }
+
+        .top-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .top-header p { color: var(--text-sub); font-size: 0.9rem; }
+
+        .booking-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 650px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.825rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
+            padding: 13px 16px 13px 44px;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
         }
 
-        input:focus { outline: none; border-color: var(--primary); }
+        .input-wrapper input:focus {
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
 
-        button {
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .train-suggestion {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-confirm {
             width: 100%;
             padding: 14px;
-            background: var(--primary);
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: 600;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: opacity 0.2s;
+            box-shadow: 0 4px 15px var(--success-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
         }
 
-        button:hover { opacity: 0.9; }
+        .btn-confirm:hover { opacity: 0.95; transform: translateY(-1px); }
 
-        /* --- AUTH OVERLAY STYLES --- */
+        /* Auth Gateway Overlay */
         #authOverlay {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(3, 7, 18, 0.92);
+            backdrop-filter: blur(15px);
             z-index: 9999;
             flex-direction: column;
             align-items: center;
@@ -96,145 +274,218 @@
         .auth-spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid var(--success);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary-glow);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 20px;
         }
 
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2>RailReserve</h2>
-    <p>Dashboard</p>
-    <p style="opacity: 0.6; font-size: 0.8rem;">System Status: Active</p>
+<div class="ambient-orb orb-1"></div>
+<div class="ambient-orb orb-2"></div>
+
+<div class="layout-wrapper">
+    <aside class="sidebar">
+        <div>
+            <div class="brand-header">
+                <div class="brand-logo"><i class="fa-solid fa-train"></i></div>
+                <span class="brand-title">RailReserve</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="info.html" class="nav-link">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>About&Help</span>
+                    <a href ="dashboard.html" class="nav-link">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href ="wallet.html" class="nav-link">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Wallet</span>
+                    </a>
+                </a>
+                <a href="find.html" class="nav-link active">
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>Reservation</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            &copy; 2026 RailReserve Portal
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <h1>Ticket Reservation</h1>
+            <p>Complete passanger details and confirm seat allocation</p>
+        </header>
+
+        <div class="booking-card">
+            <div class="form-group">
+                <label>Passenger Full Name</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="passengerName" placeholder="Enter traveler name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Train Number</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-train-subway"></i>
+                    <input type="text" id="trainNo" oninput="fetchTrainName()" placeholder="e.g. 12780">
+                </div>
+                <div id="trainSuggestion" class="train-suggestion"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Number of Seats</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-chair"></i>
+                    <input type="number" id="seats" placeholder="Max: 500" value="1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>From Station</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <input type="text" id="source" placeholder="Mumbai">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>To Station</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-location-crosshairs"></i>
+                        <input type="text" id="destination" placeholder="Delhi">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-confirm" onclick="bookTicket()">
+                <i class="fa-solid fa-lock"></i>
+                <span>Confirm Reservation</span>
+            </button>
+        </div>
+    </main>
 </div>
 
-<div class="main-content">
-    <h1>Ticket Reservation</h1>
-
-    <div class="card">
-        <div class="form-group">
-            <label>Passenger Full Name</label>
-            <input type="text" id="passengerName" placeholder="Enter traveler name">
-        </div>
-
-        <div class="form-group">
-            <label>Train Number</label>
-            <input type="text" id="trainNo" oninput="fetchTrainName()" placeholder="e.g. 12780">
-            <div id="trainSuggestion" style="color: blue; font-weight: bold; font-size: 0.8rem; margin-top: 5px;"></div>
-        </div>
-
-        <div class="form-group">
-            <label>Number of Seats</label>
-            <input type="number" id="seats" placeholder="Max: 500">
-        </div>
-
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>From Station</label>
-                <input type="text" id="source" placeholder="Mumbai">
-            </div>
-            <div class="form-group" style="flex: 1;">
-                <label>To Station</label>
-                <input type="text" id="destination" placeholder="Delhi">
-            </div>
-        </div>
-
-        <button onclick="bookTicket()">Confirm Reservation</button>
-        <div id="bookingStatus" style="display:none; margin-top:15px; color: red;"></div>
-    </div>
-</div>
-
+<!-- Auth Spinner Overlay -->
 <div id="authOverlay">
     <div class="auth-spinner"></div>
-    <h2 style="margin: 0;">Authenticating Request</h2>
-    <p style="opacity: 0.7; margin-top: 10px;">Connecting to RailReserve Secure Gateway...</p>
+    <h2 style="margin: 0; font-weight: 700;">Authenticating Request</h2>
+    <p style="opacity: 0.7; margin-top: 10px; font-size: 0.9rem;">Connecting to RailReserve Secure Gateway...</p>
 </div>
 
 <script>
-    // Global variable for your live backend
     const API_BASE_URL = "https://train-management-system.onrender.com/api";
 
-    async function fetchTrainName() {
-       const trainNo = document.getElementById('trainNo').value;
-       const suggestionDiv = document.getElementById('trainSuggestion');
+     // Pre-fill fields if coming directly from find.html
+     document.addEventListener("DOMContentLoaded", () => {
+         const urlParams = new URLSearchParams(window.location.search);
+         const trainNo = urlParams.get('trainNo');
+         const from = urlParams.get('from');
+         const to = urlParams.get('to');
 
-       if (trainNo.length >= 2) {
-           try {
-               // Updated to use live Render URL
-               const response = await fetch(`${API_BASE_URL}/trains/by-number/${trainNo}`);
-               if (response.ok) {
-                   const trainData = await response.json();
-                   suggestionDiv.innerText = "Found: " + trainData.trainName;
-                   window.currentTrainName = trainData.trainName;
-                   window.currentArrival = trainData.arrival || trainData.arrivalTime || "Not Set";
-               } else {
-                   suggestionDiv.innerText = "Train not found";
-               }
-           } catch (err) {
-               console.error("Search error:", err);
-           }
-       }
-   }
+         if (trainNo) {
+             document.getElementById('trainNo').value = trainNo;
+             fetchTrainName();
+         }
+         if (from) document.getElementById('source').value = decodeURIComponent(from);
+         if (to) document.getElementById('destination').value = decodeURIComponent(to);
+     });
 
+     async function fetchTrainName() {
+         const trainNo = document.getElementById('trainNo').value.trim();
+         const suggestionDiv = document.getElementById('trainSuggestion');
 
-    async function bookTicket() {
-    const pName = document.getElementById('passengerName').value;
-    const source = document.getElementById('source').value;
-    const destination = document.getElementById('destination').value;
-    const trainNo = document.getElementById('trainNo').value;
-    const seats = document.getElementById('seats').value;
+         if (trainNo.length >= 2) {
+             try {
+                 const response = await fetch(`${API_BASE_URL}/trains/by-number/${trainNo}`);
+                 if (response.ok) {
+                     const trainData = await response.json();
+                     suggestionDiv.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--success);"></i> Train Found: ${trainData.trainName}`;
+                     window.currentTrainName = trainData.trainName;
+                     window.currentArrival = trainData.arrival || trainData.arrivalTime || "10:00 AM";
+                 } else {
+                     suggestionDiv.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i> Train not found`;
+                 }
+             } catch (err) {
+                 console.error("Search error:", err);
+             }
+         } else {
+             suggestionDiv.innerHTML = "";
+         }
+     }
 
-    // 1. Check if we have the live data from the 'fetchTrainName' function
-    // If window.currentTrainName is empty, the user might have typed too fast.
-    const liveTrainName = window.currentTrainName || "Express Train";
-    const liveArrival = window.currentArrival || "Scheduled";
+     async function bookTicket() {
+         const pName = document.getElementById('passengerName').value.trim();
+         const source = document.getElementById('source').value.trim();
+         const destination = document.getElementById('destination').value.trim();
+         const trainNo = document.getElementById('trainNo').value.trim();
+         const seats = document.getElementById('seats').value;
 
-    if(!source || !destination || !pName) {
-        alert("Please fill in all station and passenger details.");
-        return;
-    }
+         const liveTrainName = window.currentTrainName || "Express Express";
+         const liveArrival = window.currentArrival || "10:00 AM";
 
-    const url = `https://train-management-system.onrender.com/api/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${source}_to_${destination}_Express`;
+         if (!source || !destination || !pName || !trainNo) {
+             alert("Please fill in all station and passenger details.");
+             return;
+         }
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('myJwtToken')}` }
-        });
+         const url = `https://train-management-system.onrender.com/api/trains/book?trainNumber=${trainNo}&passengerName=${pName}&seats=${seats}&source=${source}&destination=${destination}&trainName=${source}_to_${destination}_Express`;
 
-        if (response.ok) {
-            document.getElementById('authOverlay').style.display = 'flex';
+         try {
+             document.getElementById('authOverlay').style.display = 'flex';
 
-            // 2. SAVE EVERYTHING TO LOCALSTORAGE
-            const bookingDetails = {
-                name: pName,
-                source: source,
-                destination: destination,
-                train: trainNo,
-                trainName: liveTrainName, // Uses the data fetched from your Render API
-                arrivalTime : liveArrival,
-                seats: seats,
-                pnr: "RR" + Math.floor(Math.random() * 900000 + 100000),
-                date: new Date().toLocaleDateString('en-IN'),
-            };
+             const response = await fetch(url, {
+                 method: 'POST',
+                 headers: { 'Authorization': `Bearer ${localStorage.getItem('myJwtToken')}` }
+             });
 
-            localStorage.setItem('lastBooking', JSON.stringify(bookingDetails));
+             if (response.ok || response.status === 200) {
+                 const bookingDetails = {
+                     name: pName,
+                     source: source,
+                     destination: destination,
+                     train: trainNo,
+                     trainName: liveTrainName,
+                     arrivalTime: liveArrival,
+                     seats: seats,
+                     pnr: "RR" + Math.floor(Math.random() * 900000 + 100000),
+                     date: new Date().toLocaleDateString('en-IN'),
+                 };
 
-            setTimeout(() => {
-                window.location.href = "payments.html";
-            }, 3000);
-        }
-    } catch (err) {
-        console.error("Booking Error:", err);
-    }
-}
+                 localStorage.setItem('lastBooking', JSON.stringify(bookingDetails));
+
+                 setTimeout(() => {
+                     window.location.href = "payments.html";
+                 }, 2000);
+             } else {
+                 document.getElementById('authOverlay').style.display = 'none';
+                 alert("Reservation failed. Please check server logs.");
+             }
+         } catch (err) {
+             console.error("Booking Error:", err);
+             document.getElementById('authOverlay').style.display = 'none';
+             alert("Cannot connect to localhost:8080 backend.");
+         }
+     }
 </script>
-
 </body>
 </html>

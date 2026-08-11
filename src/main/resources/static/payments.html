@@ -1,289 +1,616 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RailReserve | Secure Checkout</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-        --primary: #6366f1;
-        --secondary: #a855f7;
-        --accent: #22c55e;
-        --dark: #0f172a;
-        --glass: rgba(255, 255, 255, 0.03);
-        --border: rgba(255, 255, 255, 0.1);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve | CyberPay Terminal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+          /* Unique Accent Palette per Column */
+          --neon-cyan: #06b6d4;
+          --neon-cyan-glow: rgba(6, 182, 212, 0.35);
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+          --neon-indigo: #6366f1;
+          --neon-indigo-glow: rgba(99, 102, 241, 0.35);
 
-    body {
-        background: linear-gradient(-45deg, #1e1b4b, #312e81, #1e293b, #0f172a);
-        background-size: 400% 400%;
-        animation: gradient 15s ease infinite;
-        color: #f8fafc;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
+          --neon-emerald: #10b981;
+          --neon-emerald-glow: rgba(16, 185, 129, 0.35);
 
-    @keyframes gradient {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+          --neon-amber: #f59e0b;
+          --neon-amber-glow: rgba(245, 158, 11, 0.35);
 
-    /* Full Screen Glow Effects */
-    .glow {
-        position: absolute;
-        width: 400px;
-        height: 400px;
-        background: var(--primary);
-        filter: blur(150px);
-        opacity: 0.15;
-        z-index: -1;
-    }
+          --bg-dark: #030712;
+          --glass-card: rgba(15, 23, 42, 0.65);
+          --glass-border: rgba(255, 255, 255, 0.08);
+          --text-main: #f8fafc;
+          --text-sub: #94a3b8;
+        }
 
-    .dashboard {
-        width: 90%;
-        max-width: 1100px;
-        height: 650px;
-        background: rgba(15, 23, 42, 0.7);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border: 1px solid var(--border);
-        border-radius: 32px;
-        display: flex;
-        box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.6);
-        overflow: hidden;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    /* Sidebar Summary */
-    .sidebar {
-        flex: 0.8;
-        background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
-        padding: 50px;
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-    }
+        body {
+          background-color: var(--bg-dark);
+          color: var(--text-main);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow-x: hidden;
+          position: relative;
+        }
 
-    .logo { font-weight: 800; font-size: 1.5rem; letter-spacing: -1px; margin-bottom: 40px; }
-    .logo span { color: var(--primary); }
+        /* Ambient High-Tech Orbs */
+        .ambient-orb {
+          position: fixed;
+          border-radius: 50%;
+          filter: blur(120px);
+          z-index: 1;
+          pointer-events: none;
+          animation: pulse 12s ease-in-out infinite alternate;
+        }
+        .orb-cyan { width: 450px; height: 450px; background: radial-gradient(circle, var(--neon-cyan), transparent 70%); top: -100px; left: -100px; }
+        .orb-indigo { width: 400px; height: 400px; background: radial-gradient(circle, var(--neon-indigo), transparent 70%); bottom: -100px; right: -100px; }
 
-    .order-item {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 16px;
-        margin-bottom: 20px;
-        border: 1px solid var(--border);
-    }
+        @keyframes pulse {
+          0% { transform: scale(1) translate(0, 0); }
+          100% { transform: scale(1.1) translate(30px, -20px); }
+        }
 
-    .price-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: #94a3b8; font-size: 0.9rem; }
-    .total-row { display: flex; justify-content: space-between; margin-top: auto; border-top: 1px solid var(--border); padding-top: 25px; }
+        /* Main Container Grid (3 Columns) */
+        .dashboard {
+          position: relative;
+          z-index: 10;
+          width: 95%;
+          max-width: 1280px;
+          height: 720px;
+          background: rgba(11, 19, 41, 0.75);
+          backdrop-filter: blur(25px);
+          border: 1px solid var(--glass-border);
+          border-radius: 28px;
+          display: grid;
+          grid-template-columns: 320px 1fr 340px;
+          box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+          overflow: hidden;
+        }
 
-    /* Main Area */
-    .main-content {
-        flex: 1.2;
-        padding: 60px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        position: relative;
-    }
+        /* COLUMN 1: Reservation Telemetry (Cyan Theme) */
+        .col-summary {
+          background: linear-gradient(180deg, rgba(6, 182, 212, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%);
+          border-right: 1px solid var(--glass-border);
+          padding: 35px 25px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
 
-    /* Auth Bridge Styles */
-    #auth-bridge { text-align: center; }
-    .auth-spinner {
-        width: 80px;
-        height: 80px;
-        border: 4px solid rgba(255,255,255,0.1);
-        border-top: 4px solid var(--primary);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 30px;
-    }
+        .brand-title {
+          font-size: 1.25rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #fff;
+        }
+        .brand-title i { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
 
-    /* Payment Logic Styles */
-    h2 { font-size: 2rem; margin-bottom: 10px; font-weight: 800; }
-    .subtitle { color: #94a3b8; margin-bottom: 35px; font-size: 0.95rem; }
+        .route-display {
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(6, 182, 212, 0.2);
+          border-radius: 16px;
+          padding: 20px;
+          margin-top: 20px;
+        }
 
-    .method-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 30px;
-    }
+        .route-node {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .node-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(6, 182, 212, 0.15);
+          color: var(--neon-cyan);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.85rem;
+          border: 1px solid var(--neon-cyan);
+        }
+        .station-name { font-weight: 700; font-size: 0.95rem; }
+        .station-label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; }
 
-    .method-opt {
-        background: var(--glass);
-        border: 1px solid var(--border);
-        padding: 22px;
-        border-radius: 18px;
-        cursor: pointer;
-        transition: 0.3s;
-        text-align: center;
-        font-weight: 600;
-    }
+        .price-breakdown {
+          margin-top: auto;
+          border-top: 1px dashed var(--glass-border);
+          padding-top: 20px;
+        }
+        .price-line {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.85rem;
+          color: var(--text-sub);
+          margin-bottom: 8px;
+        }
+        .total-line {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 15px;
+          padding-top: 15px;
+          border-top: 1px solid var(--glass-border);
+        }
+        .total-amount {
+          font-size: 1.6rem;
+          font-weight: 800;
+          color: var(--neon-cyan);
+          text-shadow: 0 0 12px var(--neon-cyan-glow);
+        }
 
-    .method-opt:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--primary); }
-    .method-opt.selected {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-color: transparent;
-        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
-    }
+        /* COLUMN 2: Gateway Methods (Indigo Theme) */
+        .col-gateway {
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          background: linear-gradient(180deg, rgba(99, 102, 241, 0.03) 0%, transparent 100%);
+          position: relative;
+        }
 
-    .input-field-payment {
-        width: 100%;
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border);
-        padding: 18px;
-        border-radius: 14px;
-        color: white;
-        margin-bottom: 20px;
-        outline: none;
-    }
+        .section-head { margin-bottom: 30px; }
+        .section-head h2 { font-size: 1.6rem; font-weight: 800; }
+        .section-head p { color: var(--text-sub); font-size: 0.85rem; }
 
-    .pay-btn {
-        width: 100%;
-        background: white;
-        color: var(--dark);
-        padding: 18px;
-        border-radius: 14px;
-        border: none;
-        font-weight: 800;
-        cursor: pointer;
-        transition: 0.3s;
-    }
+        .method-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 25px;
+        }
 
-    .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .method-card {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--glass-border);
+          border-radius: 16px;
+          padding: 20px;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .method-card i { font-size: 1.4rem; color: var(--neon-indigo); }
+        .method-card span { font-size: 0.9rem; font-weight: 600; }
 
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-  </style>
+        .method-card:hover {
+          background: rgba(99, 102, 241, 0.1);
+          border-color: var(--neon-indigo);
+          transform: translateY(-2px);
+        }
+
+        .method-card.selected {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.15));
+          border-color: var(--neon-indigo);
+          box-shadow: 0 0 20px var(--neon-indigo-glow);
+        }
+
+        .input-wrapper { position: relative; margin-bottom: 20px; }
+        .input-wrapper input {
+          width: 100%;
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid var(--glass-border);
+          padding: 16px 16px 16px 45px;
+          border-radius: 12px;
+          color: #fff;
+          outline: none;
+          font-size: 0.95rem;
+        }
+        .input-wrapper input:focus {
+          border-color: var(--neon-indigo);
+          box-shadow: 0 0 0 3px var(--neon-indigo-glow);
+        }
+        .input-wrapper i {
+          position: absolute;
+          left: 16px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-sub);
+        }
+
+        .pay-btn {
+          width: 100%;
+          background: linear-gradient(135deg, #6366f1, #4f46e5);
+          color: white;
+          padding: 16px;
+          border-radius: 12px;
+          border: none;
+          font-weight: 700;
+          font-size: 1rem;
+          cursor: pointer;
+          box-shadow: 0 10px 25px var(--neon-indigo-glow);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+        .pay-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+
+        /* COLUMN 3: Cyber Verification Terminal (Emerald Theme) */
+        .col-terminal {
+          background: rgba(2, 6, 23, 0.8);
+          border-left: 1px solid var(--glass-border);
+          padding: 30px 20px;
+          display: flex;
+          flex-direction: column;
+          font-family: 'JetBrains Mono', monospace;
+        }
+
+        .terminal-header {
+          font-size: 0.75rem;
+          color: #e2e8f0;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid var(--glass-border);
+          padding-bottom: 12px;
+        }
+
+        .terminal-header .live-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.65rem;
+          color: var(--neon-emerald);
+          background: rgba(16, 185, 129, 0.1);
+          padding: 4px 8px;
+          border-radius: 20px;
+          border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background-color: currentColor;
+          box-shadow: 0 0 8px currentColor;
+        }
+
+        .status-dot.pulse {
+          animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+
+        .terminal-logs {
+          background: rgba(0, 0, 0, 0.5);
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          padding: 12px;
+          font-size: 0.72rem;
+          height: 320px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 20px;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.1) transparent;
+        }
+
+        .log-entry {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          line-height: 1.4;
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-tag {
+          font-size: 0.6rem;
+          font-weight: 700;
+          padding: 2px 6px;
+          border-radius: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .tag-cyan { background: rgba(6, 182, 212, 0.15); color: var(--neon-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+        .tag-indigo { background: rgba(99, 102, 241, 0.15); color: var(--neon-indigo); border: 1px solid rgba(99, 102, 241, 0.3); }
+        .tag-emerald { background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .tag-amber { background: rgba(245, 158, 11, 0.15); color: var(--neon-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        .log-text { color: #cbd5e1; word-break: break-word; }
+
+        .status-box {
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid var(--glass-border);
+          border-radius: 12px;
+          padding: 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-top: auto;
+        }
+
+        /* Dynamic UI Overlay Controls */
+        #auth-bridge, #paymentLoader, #paymentSuccess {
+          position: absolute;
+          inset: 0;
+          background: rgba(11, 19, 41, 0.95);
+          backdrop-filter: blur(20px);
+          z-index: 50;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 30px;
+        }
+
+        .cyber-spinner {
+          width: 60px;
+          height: 60px;
+          border: 3px solid rgba(255, 255, 255, 0.1);
+          border-top-color: var(--neon-indigo);
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin-bottom: 20px;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 1024px) {
+          .dashboard { grid-template-columns: 1fr; height: auto; }
+          .col-terminal { display: none; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="glow"></div>
+<div class="ambient-orb orb-cyan"></div>
+<div class="ambient-orb orb-indigo"></div>
 
 <div class="dashboard">
-  <div class="sidebar">
-    <div class="logo">Rail<span>Reserve</span></div>
-    <div class="order-item">
-      <p style="color: var(--primary); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 10px;">Review Booking</p>
-      <h3 id="train-summary-name">Mumbai Express</h3>
-    </div>
-    <div class="pricing">
-      <div class="price-row"><span>Fare</span><span>₹1,150.00</span></div>
-      <div class="price-row"><span>Tax</span><span>₹100.00</span></div>
-    </div>
-    <div class="total-row">
-      <span style="opacity: 0.7;">Total</span>
-      <span style="font-size: 1.5rem; font-weight: 800;">₹1,250.00</span>
-    </div>
-  </div>
 
-  <div class="main-content">
+    <!-- COLUMN 1: Telemetry & Reservation Details -->
+    <div class="col-summary">
+        <div>
+            <div class="brand-title">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>RailReserve</span>
+            </div>
 
-    <div id="auth-bridge">
-      <div class="auth-spinner"></div>
-      <h2>Securing Connection</h2>
-      <p class="subtitle">Verifying your booking session with RailReserve...</p>
-    </div>
+            <div class="route-display">
+                <p style="font-size: 0.7rem; color: var(--neon-cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 12px;">Route Parameters</p>
+                <div class="route-node">
+                    <div class="node-icon"><i class="fa-solid fa-plane-departure"></i></div>
+                    <div>
+                        <div class="station-name" id="summary-source">Mumbai Central</div>
+                        <div class="station-label">Origin Station</div>
+                    </div>
+                </div>
+                <div class="route-node">
+                    <div class="node-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <div>
+                        <div class="station-name" id="summary-destination">New Delhi</div>
+                        <div class="station-label">Destination Station</div>
+                    </div>
+                </div>
+            </div>
 
-    <div id="step-selection" style="display: none;">
-      <h2>Secure Checkout</h2>
-      <p class="subtitle">Choose your preferred payment method</p>
-      <div class="method-grid">
-        <div class="method-opt" onclick="setMethod('UPI')">📱 UPI / QR</div>
-        <div class="method-opt" onclick="setMethod('Card')">💳 Debit/Credit</div>
-        <div class="method-opt" onclick="setMethod('Net')">🏦 Net Banking</div>
-        <div class="method-opt" onclick="setMethod('Wallet')">👛 Wallets</div>
-      </div>
-      <div id="details-input" style="display:none;">
-        <input type="text" id="payDetail" class="input-field-payment">
-        <button class="pay-btn" onclick="startProcessing()">Confirm Payment</button>
-      </div>
-    </div>
+            <div style="margin-top: 20px; font-size: 0.85rem; color: var(--text-sub);">
+                <p><strong>Express:</strong> <span id="summary-train-name" style="color: #fff;">Mumbai Express</span></p>
+                <p style="margin-top: 4px;"><strong>PNR Identifier:</strong> <span id="summary-pnr" style="color: var(--neon-cyan); font-family: 'JetBrains Mono';">RR-882190</span></p>
+            </div>
+        </div>
 
-    <div id="paymentLoader" style="display: none; text-align: center;">
-      <div class="auth-spinner" style="border-top-color: var(--accent);"></div>
-      <h3>Verifying with Bank</h3>
-      <p class="subtitle">Processing your secure transaction...</p>
+        <div class="price-breakdown">
+            <div class="price-line"><span>Base Reservation</span><span>₹1,150.00</span></div>
+            <div class="price-line"><span>IRCTC Duty & Service</span><span>₹100.00</span></div>
+            <div class="total-line">
+                <span style="font-weight: 600;">Total Payable</span>
+                <span class="total-amount">₹1,250.00</span>
+            </div>
+        </div>
     </div>
 
-    <div id="paymentSuccess" style="display: none; text-align: center;">
-      <div style="font-size: 60px; color: var(--accent); margin-bottom: 20px;">✔</div>
-      <h2>Payment Success</h2>
-      <p class="subtitle">Transaction ID: #RR-772910</p>
-      <button class="pay-btn" onclick="goToTicket()" style="background: var(--primary); color: white;">Download Ticket</button>
+    <!-- COLUMN 2: Payment Gateway Selection -->
+    <div class="col-gateway">
+        <div class="section-head">
+            <h2>Secure Gateway</h2>
+            <p>Select your operational channel and authorize transfer</p>
+        </div>
+
+        <div class="method-grid">
+            <div class="method-card" onclick="setMethod('UPI')">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>UPI / Virtual ID</span>
+            </div>
+            <div class="method-card" onclick="setMethod('Card')">
+                <i class="fa-solid fa-credit-card"></i>
+                <span>Card Network</span>
+            </div>
+            <div class="method-card" onclick="setMethod('NetBanking')">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Net Banking</span>
+            </div>
+            <div class="method-card" onclick="setMethod('Wallet')">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Cyber Wallet</span>
+            </div>
+        </div>
+
+        <div id="paymentInputs" style="display: none;">
+            <div class="input-wrapper">
+                <i class="fa-solid fa-shield-cat" id="inputIcon"></i>
+                <input type="text" id="payDetail" placeholder="Enter Virtual Payment Address (VPA)">
+            </div>
+            <button class="pay-btn" onclick="startProcessing()">
+                <i class="fa-solid fa-lock"></i>
+                <span>Authorize Transaction</span>
+            </button>
+        </div>
+
+        <!-- Auth Bridge Overlay -->
+        <div id="auth-bridge">
+            <div class="cyber-spinner"></div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px;">Initializing Auth Bridge</h3>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Handshaking encrypted tokens with Spring Backend...</p>
+        </div>
+
+        <!-- Loader Overlay -->
+        <div id="paymentLoader" style="display: none;">
+            <div class="cyber-spinner" style="border-top-color: var(--neon-emerald);"></div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px;">Verifying Channel</h3>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Processing request through secure gateway...</p>
+        </div>
+
+        <!-- Success Overlay -->
+        <div id="paymentSuccess" style="display: none;">
+            <div style="font-size: 3rem; color: var(--neon-emerald); margin-bottom: 10px;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2 style="margin-bottom: 6px;">Payment Approved</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 20px;">Reservation synced across internal database.</p>
+            <button class="pay-btn" onclick="goToTicket()" style="background: linear-gradient(135deg, #10b981, #059669); max-width: 220px;">
+                <i class="fa-solid fa-ticket"></i> Download Ticket
+            </button>
+        </div>
     </div>
 
-  </div>
+    <!-- COLUMN 3: Cyber Verification Terminal -->
+    <div class="col-terminal">
+        <div class="terminal-header">
+        <span style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-terminal" style="color: var(--neon-emerald);"></i> Audit Telemetry
+        </span>
+            <div class="live-badge">
+                <div class="status-dot pulse"></div>
+                <span>NODE 8080</span>
+            </div>
+        </div>
+
+        <div class="terminal-logs" id="terminalLogs">
+            <!-- Initial professional log entries -->
+        </div>
+
+        <div class="status-box">
+            <div class="status-dot" style="color: var(--neon-emerald); width: 10px; height: 10px;"></div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px;">TLS 1.3 ENCRYPTED</div>
+                <div style="font-size: 0.65rem; color: var(--text-sub); margin-top: 2px;">Spring Boot Backend Active</div>
+            </div>
+        </div>
+    </div>
+
 </div>
-<script>
-
-  window.history.pushState(null, null, window.location.href);
-  window.onpopstate = function () {
-      window.history.go(1);
-  };
-</script>
 
 <script>
-  // --- NEW: AUTH BRIDGE LOGIC ---
-  window.onload = () => {
-      // 1. Load data from local storage
+    // Navigation Guard Override
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = () => window.history.go(1);
+
+    let selectedMethod = "";
+
+    window.onload = () => {
+      // Load reservation telemetry from previous step
       const data = JSON.parse(localStorage.getItem('lastBooking'));
-      if(data && data.trainName) {
-          document.getElementById('train-summary-name').innerText = data.trainName;
+      if (data) {
+        if (data.trainName) document.getElementById('summary-train-name').innerText = data.trainName;
+        if (data.source) document.getElementById('summary-source').innerText = data.source;
+        if (data.destination) document.getElementById('summary-destination').innerText = data.destination;
+        if (data.pnr) document.getElementById('summary-pnr').innerText = data.pnr;
       }
 
-      // 2. Wait 3 seconds, then show payment options
+      // Populate initial crisp logs
+      appendLog("cyan", "INFO", "Session initialized on Port 8080");
+      appendLog("indigo", "SEC", "Handshaking TLS 1.3 token");
+
+      // Auto-dismiss auth bridge after load
       setTimeout(() => {
-          document.getElementById('auth-bridge').style.display = 'none';
-          document.getElementById('step-selection').style.display = 'block';
-      }, 3000);
-  };
+        document.getElementById('auth-bridge').style.display = 'none';
+        appendLog("emerald", "OK", "JWT token verified");
+        appendLog("amber", "PEND", "Awaiting gateway selection");
+      }, 2500);
+    };
 
-  // --- ORIGINAL LOGIC ---
-  let selectedMethod = "";
+    function appendLog(type, statusText, msg) {
+      const logs = document.getElementById('terminalLogs');
 
-  function setMethod(method) {
-      selectedMethod = method;
-      document.querySelectorAll('.method-opt').forEach(opt => opt.classList.remove('selected'));
-      event.currentTarget.classList.add('selected');
-      document.getElementById('details-input').style.display = 'block';
-      document.getElementById('payDetail').placeholder = `Enter ${method} details`;
-  }
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
 
-  function startProcessing() {
-      const detail = document.getElementById('payDetail').value;
-      if(!detail) return alert("Please enter payment details");
+      entry.innerHTML = `
+        <span class="log-tag tag-${type}">
+          <span class="status-dot"></span>
+          ${statusText}
+        </span>
+        <span class="log-text">${msg}</span>
+      `;
 
-      document.getElementById('step-selection').style.display = 'none';
-      document.getElementById('paymentLoader').style.display = 'block';
-
-      setTimeout(() => {
-          document.getElementById('paymentLoader').style.display = 'none';
-          document.getElementById('paymentSuccess').style.display = 'block';
-          console.log(`Payment confirmed via ${selectedMethod} for user gb`);
-      }, 3500);
-  }
-
-  function goToTicket() {
-      window.location.replace("ticket.html");
-  }
-
-
-    if (localStorage.getItem('bookingFinished') === 'true')
-     {
-     localStorage.removeItem('bookingFinished');
-
-        window.location.replace("ticket.html");
+      logs.appendChild(entry);
+      logs.scrollTop = logs.scrollHeight;
     }
 
-</script>
+    function setMethod(method) {
+      selectedMethod = method;
+      document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
 
+      const inputs = document.getElementById('paymentInputs');
+      const input = document.getElementById('payDetail');
+      inputs.style.display = 'block';
+
+      if (method === 'UPI') input.placeholder = "Enter Virtual Address (e.g. user@upi)";
+      else if (method === 'Card') input.placeholder = "Card Number (16-digits)";
+      else if (method === 'NetBanking') input.placeholder = "Select/Enter Bank Identifier";
+      else input.placeholder = "Enter Linked Phone Number";
+
+      appendLog("indigo", "SEC", `Channel mapped: ${method}`);
+    }
+
+    function startProcessing() {
+      const detail = document.getElementById('payDetail').value;
+      if (!detail) return alert("Please enter payment authorization details.");
+
+      document.getElementById('paymentLoader').style.display = 'flex';
+      appendLog("amber", "PEND", "Routing payload to gateway");
+
+      setTimeout(() => {
+        appendLog("emerald", "OK", "Settlement approved");
+        appendLog("emerald", "OK", "DB transaction committed");
+        document.getElementById('paymentLoader').style.display = 'none';
+        document.getElementById('paymentSuccess').style.display = 'flex';
+      }, 3000);
+    }
+
+    function goToTicket() {
+      window.location.replace("ticket.html");
+    }
+
+    if (localStorage.getItem('bookingFinished') === 'true') {
+      localStorage.removeItem('bookingFinished');
+      window.location.replace("ticket.html");
+    }
+</script>
 </body>
 </html>

@@ -9,12 +9,16 @@ services:
 
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
-          name: rail_reserve_db
+          name: rail_reserve_db2
           property: user
       - key: SPRING_DATASOURCE_PASSWORD
         fromDatabase:
-          name: rail_reserve_db
+          name: rail_reserve_db2
           property: password
+      - key: SPRING_MAIL_USERNAME
+        sync: false
+      - key: SPRING_MAIL_PASSWORD
+        sync: false
       - key: PORT
         value: "8080"
         healthCheckPath: /api

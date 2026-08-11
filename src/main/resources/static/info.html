@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve | Advanced Ticket Booking Guide</title>
+    <!-- FontAwesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+          --bg-main: #f8fafc;
+          --card-bg: #ffffff;
+          --primary: #1e293b;
+          --accent-blue: #2563eb;
+          --accent-blue-light: #eff6ff;
+          --accent-gold: #d97706;
+          --accent-gold-light: #fffbeb;
+          --accent-green: #059669;
+          --border-color: #e2e8f0;
+          --text-main: #0f172a;
+          --text-muted: #64748b;
+          --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+          background-color: var(--bg-main);
+          color: var(--text-main);
+          line-height: 1.6;
+          padding-bottom: 60px;
+        }
+
+        /* Top Navigation Header */
+        .header {
+          background: var(--card-bg);
+          border-bottom: 1px solid var(--border-color);
+          padding: 18px 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .brand-logo {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: var(--primary);
+        }
+
+        /* BOLD TRAIN SYMBOL */
+        .train-symbol-bold {
+          width: 48px;
+          height: 48px;
+          background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+          color: #ffffff;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.6rem;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .container {
+          max-width: 1100px;
+          margin: 40px auto;
+          padding: 0 20px;
+        }
+
+        /* Hero Banner Section */
+        .hero {
+          background: linear-gradient(135deg, #1e293b, #0f172a);
+          color: #ffffff;
+          border-radius: 24px;
+          padding: 50px 40px;
+          margin-bottom: 40px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          box-shadow: var(--shadow-lg);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hero-text { max-width: 600px; z-index: 2; }
+        .hero-text h1 { font-family: 'Outfit', sans-serif; font-size: 2.3rem; font-weight: 800; margin-bottom: 12px; line-height: 1.2; }
+        .hero-text p { color: #94a3b8; font-size: 1rem; margin-bottom: 20px; }
+
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #38bdf8;
+          margin-bottom: 15px;
+        }
+
+        .hero-symbol-bg {
+          font-size: 12rem;
+          color: rgba(255, 255, 255, 0.04);
+          position: absolute;
+          right: -20px;
+          bottom: -30px;
+          pointer-events: none;
+        }
+
+        /* Section Styling */
+        .section-title {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.6rem;
+          font-weight: 700;
+          color: var(--primary);
+          margin-bottom: 8px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .section-subtitle {
+          color: var(--text-muted);
+          font-size: 0.95rem;
+          margin-bottom: 30px;
+        }
+
+        /* FLOWCHART SECTION */
+        .flowchart-wrapper {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 20px;
+          padding: 35px;
+          margin-bottom: 40px;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .flowchart-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 15px;
+          position: relative;
+        }
+
+        .flow-step {
+          background: var(--bg-main);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 20px 15px;
+          text-align: center;
+          position: relative;
+          transition: all 0.3s ease;
+        }
+
+        .flow-step:hover {
+          border-color: var(--accent-blue);
+          transform: translateY(-3px);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .step-number {
+          width: 32px;
+          height: 32px;
+          background: var(--accent-blue-light);
+          color: var(--accent-blue);
+          font-weight: 800;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+          font-size: 0.85rem;
+        }
+
+        .flow-step i {
+          font-size: 1.5rem;
+          color: var(--primary);
+          margin-bottom: 10px;
+        }
+
+        .flow-step h4 {
+          font-size: 0.9rem;
+          font-weight: 700;
+          margin-bottom: 6px;
+          color: var(--primary);
+        }
+
+        .flow-step p {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          line-height: 1.4;
+        }
+
+        /* Connecting arrows between flowchart steps */
+        .flow-step:not(:last-child)::after {
+          content: '\f061';
+          font-family: 'Font Awesome 6 Free';
+          font-weight: 900;
+          position: absolute;
+          right: -14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--accent-blue);
+          font-size: 0.9rem;
+          z-index: 5;
+          background: var(--card-bg);
+          border-radius: 50%;
+          padding: 2px;
+        }
+
+        /* GRAPHS & ANALYTICS SECTION */
+        .analytics-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr;
+          gap: 25px;
+          margin-bottom: 40px;
+        }
+
+        .chart-card {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 20px;
+          padding: 30px;
+          box-shadow: var(--shadow-sm);
+        }
+
+        /* CSS Bar Chart */
+        .bar-chart-container {
+          margin-top: 25px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .bar-group { display: flex; flex-direction: column; gap: 6px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; }
+
+        .bar-track {
+          height: 12px;
+          background: var(--bg-main);
+          border-radius: 6px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .bar-fill {
+          height: 100%;
+          border-radius: 6px;
+          transition: width 1s ease-in-out;
+        }
+
+        .fill-blue { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+        .fill-gold { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .fill-green { background: linear-gradient(90deg, #10b981, #059669); }
+        .fill-gray { background: #cbd5e1; }
+
+        /* Peak Window Schedule Grid */
+        .time-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 15px;
+          margin-top: 20px;
+        }
+
+        .time-card {
+          background: var(--bg-main);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 15px;
+        }
+
+        .time-card.highlight {
+          background: var(--accent-gold-light);
+          border-color: #fde68a;
+        }
+
+        .time-card-header {
+          display: flex;
+          justify-content: space-between;
+          font-weight: 700;
+          font-size: 0.85rem;
+          margin-bottom: 4px;
+        }
+
+        .time-card p { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* TIPS GRID */
+        .tips-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+        }
+
+        .tip-card {
+          background: var(--card-bg);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .tip-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: var(--accent-blue-light);
+          color: var(--accent-blue);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          margin-bottom: 15px;
+        }
+
+        .tip-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .tip-card p { font-size: 0.82rem; color: var(--text-muted); }
+
+        @media (max-width: 900px) {
+          .flowchart-grid { grid-template-columns: 1fr; gap: 20px; }
+          .flow-step:not(:last-child)::after {
+            content: '\f063';
+            right: 50%;
+            top: auto;
+            bottom: -15px;
+            transform: translateX(50%);
+          }
+          .analytics-grid { grid-template-columns: 1fr; }
+          .tips-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top Header with Bold Train Symbol -->
+<header class="header">
+    <div class="brand-logo">
+        <div class="train-symbol-bold">
+            <i class="fa-solid fa-train"></i>
+        </div>
+        <span>RailReserve <span style="font-size: 0.8rem; color: var(--accent-blue); font-weight: 600;">GUIDE</span></span>
+    </div>
+    <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
+        <i class="fa-solid fa-book-open"></i> Advance Booking Knowledge Base
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-text">
+            <div class="hero-badge"><i class="fa-solid fa-shield-halved"></i> Smart Passenger Optimization</div>
+            <h1>Mastering Advance Train Ticket Bookings</h1>
+            <p>Learn how ticket allocation algorithms work, maximize your confirmed seat probability, and optimize your advance reservation timelines.</p>
+        </div>
+        <i class="fa-solid fa-train-subway hero-symbol-bg"></i>
+    </div>
+
+    <!-- 1. FLOWCHART SECTION -->
+    <div class="section-title">
+        <i class="fa-solid fa-diagram-project" style="color: var(--accent-blue);"></i>
+        Step-by-Step Ticket Booking Flowchart
+    </div>
+    <div class="section-subtitle">Follow this optimized lifecycle for seamless train reservation and live status tracking.</div>
+
+    <div class="flowchart-wrapper">
+        <div class="flowchart-grid">
+
+            <!-- Step 1 -->
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <h4>Route Discovery</h4>
+                <p>Search origin & destination stations 60 to 120 days before journey date.</p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <i class="fa-solid fa-user-check"></i>
+                <h4>Passenger Pre-Fill</h4>
+                <p>Pre-save passenger profiles to skip typing during high-demand windows.</p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <i class="fa-solid fa-chair"></i>
+                <h4>Seat Preference</h4>
+                <p>Choose berth choices (Lower/Upper) and select auto-upgrade options.</p>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <i class="fa-solid fa-bolt"></i>
+                <h4>Instant Payment</h4>
+                <p>Use high-priority express payment methods (UPI auto-debit / NetBanking).</p>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <i class="fa-solid fa-qrcode"></i>
+                <h4>PNR & QR Generation</h4>
+                <p>Receive digital ticket with instantly verifiable PNR and gate QR code.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 2. ANALYTICS & CSS GRAPHS SECTION -->
+    <div class="analytics-grid">
+
+        <!-- Graph 1: Confirmation Probability Bar Chart -->
+        <div class="chart-card">
+            <div class="section-title" style="font-size: 1.2rem;">
+                <i class="fa-solid fa-chart-column" style="color: var(--accent-blue);"></i>
+                Confirmation Success Rate vs. Days
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Probability of locking a confirmed berth relative to advance booking window.</div>
+
+            <div class="bar-chart-container">
+
+                <div class="bar-group">
+                    <div class="bar-label">
+                        <span>60 - 120 Days in Advance (ARP Open)</span>
+                        <span style="color: var(--accent-green);">98% Confirmed</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill fill-green" style="width: 98%;"></div>
+                    </div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label">
+                        <span>30 Days in Advance</span>
+                        <span style="color: var(--accent-blue);">85% Confirmed</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill fill-blue" style="width: 85%;"></div>
+                    </div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label">
+                        <span>7 Days in Advance</span>
+                        <span style="color: var(--accent-gold);">45% (Waitlist / RAC)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill fill-gold" style="width: 45%;"></div>
+                    </div>
+                </div>
+
+                <div class="bar-group">
+                    <div class="bar-label">
+                        <span>24 Hours Prior (Tatkal Booking)</span>
+                        <span style="color: var(--text-muted);">20% Instant Lock</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill fill-gray" style="width: 20%;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Graph 2: Peak Traffic Windows -->
+        <div class="chart-card">
+            <div class="section-title" style="font-size: 1.2rem;">
+                <i class="fa-solid fa-clock" style="color: var(--accent-gold);"></i>
+                Critical Booking Windows
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Key server traffic timelines for daily quota releases.</div>
+
+            <div class="time-grid">
+
+                <div class="time-card">
+                    <div class="time-card-header">
+                        <span>08:00 AM</span>
+                        <span style="color: var(--accent-blue);">General</span>
+                    </div>
+                    <p>Advance Reservation Period (ARP) opens daily for 60-day advance trips.</p>
+                </div>
+
+                <div class="time-card highlight">
+                    <div class="time-card-header">
+                        <span>10:00 AM</span>
+                        <span style="color: var(--accent-gold);">AC Tatkal</span>
+                    </div>
+                    <p>Emergency quota opens for AC Classes (1A, 2A, 3A, CC).</p>
+                </div>
+
+                <div class="time-card highlight">
+                    <div class="time-card-header">
+                        <span>11:00 AM</span>
+                        <span style="color: var(--accent-gold);">Non-AC Tatkal</span>
+                    </div>
+                    <p>Emergency quota opens for Sleeper (SL) & General classes.</p>
+                </div>
+
+                <div class="time-card">
+                    <div class="time-card-header">
+                        <span>4 Hrs Prior</span>
+                        <span style="color: var(--accent-green);">Final Chart</span>
+                    </div>
+                    <p>Final chart preparation. Unused quotas convert to RAC/General waitlist.</p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 3. ADVANCED PRO TIPS -->
+    <div class="section-title">
+        <i class="fa-solid fa-lightbulb" style="color: var(--accent-gold);"></i>
+        Pro Tips for Confirmed Tickets
+    </div>
+    <div class="section-subtitle">Smart recommendations to beat long waitlists and secure confirmed travel seats.</div>
+
+    <div class="tips-grid">
+
+        <div class="tip-card">
+            <div class="tip-icon"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
+            <h3>Route Splitting</h3>
+            <p>If direct tickets are sold out, book from a major station earlier on the train line or search intermediate junction transfers.</p>
+        </div>
+
+        <div class="tip-card">
+            <div class="tip-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+            <h3>Auto-Upgrade Opt-In</h3>
+            <p>Always check the free Auto-Upgrade box during checkout. If higher classes have empty berths, you get upgraded for free.</p>
+        </div>
+
+        <div class="tip-card">
+            <div class="tip-icon"><i class="fa-solid fa-credit-card"></i></div>
+            <h3>Pre-Funded Wallet</h3>
+            <p>Use pre-funded wallet tools or direct UPI pin authentication to finalize transactions within 5 seconds during high-demand windows.</p>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -13,6 +13,7 @@ import java.util.List;
 
 @Service
 public class trainServiceImpl {
+
     @Autowired
     private trainRepo trainRepo;
 
@@ -96,6 +97,7 @@ public class trainServiceImpl {
             throw new RuntimeException("Booking failed: Insufficient seats or train not found.");
         }
     }
+
 
 
     public train findByNumber(String trainNumber)

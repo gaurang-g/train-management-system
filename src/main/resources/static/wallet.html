@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailReserve Wallet | Digital Payments</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+          --bg-dark: #080c14;
+          --card-bg: rgba(17, 24, 39, 0.7);
+          --card-border: rgba(255, 255, 255, 0.08);
+          --primary-glow: #6366f1;
+          --secondary-glow: #8b5cf6;
+          --accent-green: #10b981;
+          --accent-cyan: #06b6d4;
+          --accent-pink: #ec4899;
+          --text-main: #f8fafc;
+          --text-muted: #94a3b8;
+        }
+
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+          background-color: var(--bg-dark);
+          color: var(--text-main);
+          min-height: 100vh;
+          overflow-x: hidden;
+          background-image:
+            radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
+          padding-bottom: 50px;
+        }
+
+        /* Top Navigation */
+        .navbar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 40px;
+          backdrop-filter: blur(16px);
+          background: rgba(8, 12, 20, 0.6);
+          border-bottom: 1px solid var(--card-border);
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+
+        .brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.5rem;
+          font-weight: 800;
+        }
+
+        .brand-icon {
+          width: 42px;
+          height: 42px;
+          background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .user-profile {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          background: var(--card-bg);
+          padding: 6px 16px 6px 8px;
+          border-radius: 30px;
+          border: 1px solid var(--card-border);
+        }
+
+        .avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--accent-cyan), var(--primary-glow));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        /* Main Dashboard Layout */
+        .dashboard-container {
+          max-width: 1280px;
+          margin: 35px auto;
+          padding: 0 25px;
+          display: grid;
+          grid-template-columns: 2.2fr 1fr;
+          gap: 30px;
+        }
+
+        /* Glassmorphic Card Containers */
+        .glass-card {
+          background: var(--card-bg);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid var(--card-border);
+          border-radius: 24px;
+          padding: 28px;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Hero Wallet Section */
+        .wallet-hero {
+          display: grid;
+          grid-template-columns: 1fr 1.1fr;
+          gap: 25px;
+          align-items: center;
+          margin-bottom: 30px;
+        }
+
+        .balance-label {
+          font-size: 0.9rem;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          font-weight: 600;
+        }
+
+        .balance-amount {
+          font-family: 'Outfit', sans-serif;
+          font-size: 3rem;
+          font-weight: 800;
+          margin: 8px 0 20px;
+          background: linear-gradient(135deg, #ffffff, #cbd5e1);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          display: flex;
+          align-items: baseline;
+          gap: 5px;
+        }
+
+        .wallet-actions {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+
+        .action-btn {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--card-border);
+          color: var(--text-main);
+          padding: 14px 10px;
+          border-radius: 16px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          position: relative;
+        }
+
+        .action-btn.disabled {
+          opacity: 0.75;
+          cursor: not-allowed;
+        }
+
+        .action-btn i {
+          font-size: 1.2rem;
+          color: var(--accent-cyan);
+        }
+
+        .action-btn:not(.disabled):hover {
+          background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+          border-color: transparent;
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-btn:not(.disabled):hover i { color: #fff; }
+
+        /* Coming Soon Badge Styling */
+        .badge-coming-soon {
+          position: absolute;
+          top: -8px;
+          right: -4px;
+          background: linear-gradient(135deg, var(--accent-pink), var(--secondary-glow));
+          color: #fff;
+          font-size: 0.6rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          padding: 2px 7px;
+          border-radius: 10px;
+          box-shadow: 0 2px 10px rgba(236, 72, 153, 0.5);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          white-space: nowrap;
+        }
+
+        /* 3D Glass Virtual Card Graphic */
+        .virtual-card {
+          width: 100%;
+          height: 210px;
+          border-radius: 20px;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+          backdrop-filter: blur(30px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          position: relative;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+          transition: transform 0.4s ease;
+        }
+
+        .virtual-card:hover {
+          transform: rotateY(5deg) rotateX(5deg) scale(1.02);
+        }
+
+        .card-glow {
+          position: absolute;
+          top: -50%;
+          right: -50%;
+          width: 200px;
+          height: 200px;
+          background: radial-gradient(circle, rgba(236, 72, 153, 0.4), transparent 70%);
+          pointer-events: none;
+        }
+
+        .card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .chip-icon {
+          width: 40px;
+          height: 28px;
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+          border-radius: 6px;
+          position: relative;
+        }
+
+        .card-number {
+          font-family: 'Outfit', monospace;
+          font-size: 1.25rem;
+          letter-spacing: 3px;
+          word-spacing: 5px;
+          font-weight: 600;
+        }
+
+        .card-bottom {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+        }
+
+        .card-holder { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+        .card-holder-name { font-size: 0.95rem; font-weight: 700; color: #fff; }
+
+        /* SVG Analytics Chart Section */
+        .chart-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+
+        .chart-title {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.2rem;
+          font-weight: 700;
+        }
+
+        .chart-graphic-wrapper {
+          position: relative;
+          width: 100%;
+          height: 180px;
+          margin-top: 15px;
+        }
+
+        /* Quick Pay Avatar Carousel */
+        .quick-send-section { margin-top: 30px; }
+
+        .avatars-grid {
+          display: flex;
+          gap: 16px;
+          margin-top: 15px;
+          overflow-x: auto;
+          padding-bottom: 8px;
+        }
+
+        .avatar-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          min-width: 65px;
+        }
+
+        .avatar-circle {
+          width: 54px;
+          height: 54px;
+          border-radius: 50%;
+          background: var(--card-bg);
+          border: 2px solid var(--card-border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          transition: all 0.3s ease;
+          position: relative;
+        }
+
+        .avatar-item:hover .avatar-circle {
+          border-color: var(--accent-cyan);
+          transform: scale(1.1);
+          box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .add-avatar {
+          background: rgba(255, 255, 255, 0.05);
+          border: 2px dashed var(--card-border);
+          color: var(--accent-cyan);
+        }
+
+        /* Right Sidebar: Transactions & Stats */
+        .sidebar-section {
+          display: flex;
+          flex-direction: column;
+          gap: 25px;
+        }
+
+        .transaction-list {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          margin-top: 15px;
+        }
+
+        .txn-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--card-border);
+          transition: background 0.3s ease;
+        }
+
+        .txn-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .txn-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .txn-icon {
+          width: 42px;
+          height: 42px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+        }
+
+        .icon-train { background: rgba(99, 102, 241, 0.15); color: var(--primary-glow); }
+        .icon-add { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .icon-food { background: rgba(236, 72, 153, 0.15); color: var(--accent-pink); }
+
+        .txn-details h5 { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+        .txn-details p { font-size: 0.75rem; color: var(--text-muted); }
+
+        .txn-amount { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.95rem; }
+        .plus { color: var(--accent-green); }
+        .minus { color: var(--text-main); }
+
+        /* Modal Styling */
+        .modal-overlay {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(10px);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal-content {
+          background: #0f172a;
+          border: 1px solid var(--card-border);
+          width: 90%;
+          max-width: 400px;
+          border-radius: 24px;
+          padding: 30px;
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal-input {
+          width: 100%;
+          padding: 14px 18px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid var(--card-border);
+          border-radius: 12px;
+          color: #fff;
+          font-size: 1rem;
+          margin: 20px 0;
+          outline: none;
+        }
+
+        .modal-btn {
+          width: 100%;
+          padding: 14px;
+          background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+          border: none;
+          border-radius: 12px;
+          color: #fff;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        @media (max-width: 968px) {
+          .dashboard-container { grid-template-columns: 1fr; }
+          .wallet-hero { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="brand">
+        <div class="brand-icon">
+            <i class="fa-solid fa-wallet" style="color: #fff;"></i>
+        </div>
+        <span>RailReserve <span style="color: var(--accent-cyan); font-weight: 500;">Pay</span></span>
+    </div>
+    <div class="user-profile">
+        <div class="avatar">G</div>
+        <div style="font-size: 0.85rem; font-weight: 600;">
+            User
+            <div style="font-size: 0.7rem; color: var(--accent-green); font-weight: 500;">● Verified User</div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Dashboard Container -->
+<div class="dashboard-container">
+
+    <!-- LEFT COLUMN: Wallet Hero, Analytics, & Quick Transfer -->
+    <div>
+
+        <!-- Wallet Hero Card -->
+        <div class="glass-card wallet-hero">
+            <div>
+                <div class="balance-label">Total Wallet Balance..! upcoming feature</div>
+                <div class="balance-amount">₹<span id="walletBalance">4,850.00</span></div>
+
+                <div class="wallet-actions">
+                    <button class="action-btn" onclick="openAddMoneyModal()">
+                        <i class="fa-solid fa-plus"></i>
+                        Add Money
+                    </button>
+                    <button class="action-btn disabled" onclick="alert('Scan & Pay feature coming soon!')">
+                        <span class="badge-coming-soon">Soon</span>
+                        <i class="fa-solid fa-qrcode"></i>
+                        Scan & Pay
+                    </button>
+                    <button class="action-btn disabled" onclick="alert('Transfer to Bank feature coming soon!')">
+                        <span class="badge-coming-soon">Soon</span>
+                        <i class="fa-solid fa-building-columns"></i>
+                        To Bank
+                    </button>
+                </div>
+            </div>
+
+            <!-- Animated Virtual Card -->
+            <div class="virtual-card">
+                <div class="card-glow"></div>
+                <div class="card-top">
+                    <div class="chip-icon"></div>
+                    <i class="fa-solid fa-wifi" style="color: rgba(255,255,255,0.6); transform: rotate(90deg);"></i>
+                </div>
+                <div class="card-number">•••• •••• 8821</div>
+                <div class="card-bottom">
+                    <div>
+                        <div class="card-holder">Card Holder</div>
+                        <div class="card-holder-name">Beneficiary</div>
+                    </div>
+                    <i class="fa-brands fa-cc-mastercard" style="font-size: 2.2rem; color: rgba(255,255,255,0.8);"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced SVG Spending Analytics Graph -->
+        <div class="glass-card">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">Spending Analytics</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Weekly payment trend visualization</div>
+                </div>
+                <span style="font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--card-border);">August 2026</span>
+            </div>
+
+            <div class="chart-graphic-wrapper">
+                <svg viewBox="0 0 500 150" style="width: 100%; height: 100%; overflow: visible;">
+                    <defs>
+                        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#6366f1" stop-opacity="0.5"/>
+                            <stop offset="100%" stop-color="#6366f1" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Background Area Fill -->
+                    <path d="M 0,130 Q 80,40 160,90 T 320,30 T 500,80 L 500,150 L 0,150 Z" fill="url(#chartGradient)" />
+                    <!-- Glowing Line Chart -->
+                    <path d="M 0,130 Q 80,40 160,90 T 320,30 T 500,80" fill="none" stroke="#06b6d4" stroke-width="4" style="filter: drop-shadow(0 0 8px #06b6d4);" />
+                    <!-- Data Points -->
+                    <circle cx="160" cy="90" r="5" fill="#fff" stroke="#6366f1" stroke-width="3"/>
+                    <circle cx="320" cy="30" r="6" fill="#fff" stroke="#ec4899" stroke-width="3" style="filter: drop-shadow(0 0 10px #ec4899);"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Quick Transfer Contacts Carousel -->
+        <div class="quick-send-section">
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">Fast Payment to Friends</div>
+            <div class="avatars-grid">
+                <div class="avatar-item" onclick="alert('Add beneficiary feature coming soon!')">
+                    <div class="avatar-circle add-avatar"><i class="fa-solid fa-plus"></i></div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Add New</span>
+                </div>
+                <div class="avatar-item" onclick="quickPay('Rahul', 250)">
+                    <div class="avatar-circle" style="background: linear-gradient(135deg, #f59e0b, #ec4899);">R</div>
+                    <span style="font-size: 0.75rem;">Rahul</span>
+                </div>
+                <div class="avatar-item" onclick="quickPay('Aarav', 500)">
+                    <div class="avatar-circle" style="background: linear-gradient(135deg, #10b981, #06b6d4);">A</div>
+                    <span style="font-size: 0.75rem;">Aarav</span>
+                </div>
+                <div class="avatar-item" onclick="quickPay('Priya', 150)">
+                    <div class="avatar-circle" style="background: linear-gradient(135deg, #8b5cf6, #3b82f6);">P</div>
+                    <span style="font-size: 0.75rem;">Priya</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Transactions History & Benefits -->
+    <div class="sidebar-section">
+
+        <!-- Recent Transactions -->
+        <div class="glass-card">
+            <div class="chart-header">
+                <div class="chart-title">Recent Activity</div>
+                <i class="fa-solid fa-sliders" style="color: var(--text-muted); cursor: pointer;"></i>
+            </div>
+
+            <div class="transaction-list" id="transactionList">
+
+                <div class="txn-item">
+                    <div class="txn-left">
+                        <div class="txn-icon icon-train"><i class="fa-solid fa-train"></i></div>
+                        <div class="txn-details">
+                            <h5>Mumbai Express Ticket</h5>
+                            <p>11 Aug • PNR #RR-8821</p>
+                        </div>
+                    </div>
+                    <div class="txn-amount minus">- ₹1,250.00</div>
+                </div>
+
+                <div class="txn-item">
+                    <div class="txn-left">
+                        <div class="txn-icon icon-add"><i class="fa-solid fa-arrow-down-left"></i></div>
+                        <div class="txn-details">
+                            <h5>UPI Top-Up</h5>
+                            <p>10 Aug • Auto-Add</p>
+                        </div>
+                    </div>
+                    <div class="txn-amount plus">+ ₹2,000.00</div>
+                </div>
+
+                <div class="txn-item">
+                    <div class="txn-left">
+                        <div class="txn-icon icon-food"><i class="fa-solid fa-utensils"></i></div>
+                        <div class="txn-details">
+                            <h5>IRCTC Pantry Order</h5>
+                            <p>09 Aug • Train Catering</p>
+                        </div>
+                    </div>
+                    <div class="txn-amount minus">- ₹180.00</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Wallet Cashback Promo Banner -->
+        <div class="glass-card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2)); border-color: rgba(236, 72, 153, 0.3);">
+            <i class="fa-solid fa-bolt" style="font-size: 2rem; color: var(--accent-pink); margin-bottom: 12px;"></i>
+            <h4 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 6px;">5% Instant Cashback</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Book any train ticket using RailReserve Wallet to unlock flat rewards.</p>
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan); cursor: pointer;">Activate Offer →</span>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Interactive Add Money Modal -->
+<div class="modal-overlay" id="addMoneyModal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-family: 'Outfit';">Add Funds to Wallet</h3>
+            <i class="fa-solid fa-xmark" style="cursor: pointer;" onclick="closeAddMoneyModal()"></i>
+        </div>
+        <input type="number" id="addAmountInput" class="modal-input" placeholder="Enter amount (e.g. 500)">
+        <button class="modal-btn" onclick="processAddMoney()">Proceed to Pay</button>
+    </div>
+</div>
+
+<script>
+    // Load persisted balance if available
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedBalance = localStorage.getItem('wallet_balance');
+      if (savedBalance) {
+        document.getElementById('walletBalance').innerText = parseFloat(savedBalance).toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+    });
+
+    function openAddMoneyModal() {
+      document.getElementById('addMoneyModal').style.display = 'flex';
+    }
+
+    function closeAddMoneyModal() {
+      document.getElementById('addMoneyModal').style.display = 'none';
+    }
+
+    function processAddMoney() {
+      const input = document.getElementById('addAmountInput');
+      const amount = parseFloat(input.value);
+
+      if (isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+      }
+
+      const balanceEl = document.getElementById('walletBalance');
+      let currentBalance = parseFloat(balanceEl.innerText.replace(/,/g, ''));
+      let newBalance = currentBalance + amount;
+
+      // Update UI & LocalStorage
+      balanceEl.innerText = newBalance.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      localStorage.setItem('wallet_balance', newBalance);
+
+      // Add to transaction list
+      addTransactionRecord('UPI Top-Up', 'Just Now • Direct Wallet Deposit', amount, true);
+
+      input.value = '';
+      closeAddMoneyModal();
+    }
+
+    function quickPay(name, amount) {
+      const balanceEl = document.getElementById('walletBalance');
+      let currentBalance = parseFloat(balanceEl.innerText.replace(/,/g, ''));
+
+      if (currentBalance < amount) {
+        alert("Insufficient wallet balance!");
+        return;
+      }
+
+      if (confirm(`Confirm transfer of ₹${amount} to ${name}?`)) {
+        let newBalance = currentBalance - amount;
+        balanceEl.innerText = newBalance.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        localStorage.setItem('wallet_balance', newBalance);
+
+        addTransactionRecord(`Payment to ${name}`, 'Just Now • Quick Send', amount, false);
+      }
+    }
+
+    function addTransactionRecord(title, subtitle, amount, isCredit) {
+      const transactionList = document.getElementById('transactionList');
+      const txnItem = document.createElement('div');
+      txnItem.className = 'txn-item';
+
+      const iconClass = isCredit ? 'icon-add' : 'icon-train';
+      const faIcon = isCredit ? 'fa-arrow-down-left' : 'fa-paper-plane';
+      const amountClass = isCredit ? 'plus' : 'minus';
+      const prefix = isCredit ? '+' : '-';
+
+      txnItem.innerHTML = `
+        <div class="txn-left">
+          <div class="txn-icon ${iconClass}">
+            <i class="fa-solid ${faIcon}"></i>
+          </div>
+          <div class="txn-details">
+            <h5>${title}</h5>
+            <p>${subtitle}</p>
+          </div>
+        </div>
+        <div class="txn-amount ${amountClass}">${prefix} ₹${amount.toFixed(2)}</div>
+      `;
+
+      transactionList.prepend(txnItem);
+    }
+</script>
+</body>
+</html>
