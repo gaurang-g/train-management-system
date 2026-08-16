@@ -2,6 +2,7 @@ package Train.Managment.System.TMSIR.App.Controller;
 
 import Train.Managment.System.TMSIR.App.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +68,7 @@ public class TicketEmailController {
         }
     }}*/
 
-
+/*
     @Service
     public class EmailService {
 
@@ -97,6 +98,50 @@ public class TicketEmailController {
 
                 if (response.statusCode() >= 400) {
                     throw new RuntimeException("Resend API error (" + response.statusCode() + "): " + response.body());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Email delivery failed: " + e.getMessage(), e);
+            }
+        }
+    }
+}
+
+ */
+
+    @Service
+    public class EmailService {
+
+        @Value("${brevo.api.key}")
+        private String brevoApiKey;
+
+        @Value("${brevo.sender.email}")
+        private String senderEmail;
+
+        public void sendTicketEmail(String toEmail, String pnr, String trainName, String source, String destination) {
+            try {
+                String htmlContent = "<h3>Ticket Details</h3><p>Train: <strong>" + trainName + "</strong></p><p>Route: " + source + " to " + destination + "</p><p>PNR: <strong>" + pnr + "</strong></p>";
+
+                String jsonPayload = """
+                        {
+                          "sender": {"name": "RailReserve Support", "email": "%s"},
+                          "to": [{"email": "%s"}],
+                          "subject": "Booking Confirmation - PNR %s",
+                          "htmlContent": "%s"
+                        }
+                        """.formatted(senderEmail, toEmail, pnr, htmlContent.replace("\"", "\\\""));
+
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                        .header("api-key", brevoApiKey)
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                        .build();
+
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() >= 400) {
+                    throw new RuntimeException("Brevo API error (" + response.statusCode() + "): " + response.body());
                 }
             } catch (Exception e) {
                 throw new RuntimeException("Email delivery failed: " + e.getMessage(), e);
