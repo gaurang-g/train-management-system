@@ -456,7 +456,7 @@
         <div class="btn-group">
             <button class="btn" onclick="openEmailModal()"><i class="fa-solid fa-envelope"></i> Email Ticket</button>
             <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / PDF</button>
-            <button id="logoutBtn" class="logout-btn" onclick="sessionStorage.clear()">Logout</button>
+            <button id="logoutBtn" class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </div>
 
@@ -571,6 +571,12 @@
 
 <script>
     const BASE_URL = 'https://train-management-system.onrender.com';
+
+    function logout() {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    }
 
     // Helper function: Reads localStorage safely without crashing on plain text
     function safeGetStorage(key) {
@@ -713,15 +719,6 @@
         btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
         btn.disabled = false;
       }
-
-   document.getElementById('logoutBtn').addEventListener('click', () => {
-  // Clear local auth tokens or session data
-  localStorage.clear();
-  sessionStorage.clear();
-
-  // Redirect to login or home page
-  window.location.href = 'index.html';
-});
     }
 </script>
 </body>
