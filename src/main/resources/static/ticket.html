@@ -425,9 +425,25 @@
           .ticket-main::before, .ticket-main::after { display: none; }
           .details-grid { grid-template-columns: repeat(2, 1fr); }
         }
+        .logout-btn {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #dc2626;
+}
     </style>
 </head>
 <body>
+
 
 <div class="ambient-orb orb-cyan"></div>
 <div class="ambient-orb orb-emerald"></div>
@@ -440,6 +456,7 @@
         <div class="btn-group">
             <button class="btn" onclick="openEmailModal()"><i class="fa-solid fa-envelope"></i> Email Ticket</button>
             <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / PDF</button>
+            <button id="logoutBtn" class="logout-btn" onclick="sessionStorage.clear()">Logout</button>
         </div>
     </div>
 
@@ -696,6 +713,15 @@
         btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send`;
         btn.disabled = false;
       }
+
+   document.getElementById('logoutBtn').addEventListener('click', () => {
+  // Clear local auth tokens or session data
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Redirect to login or home page
+  window.location.href = 'index.html';
+});
     }
 </script>
 </body>
