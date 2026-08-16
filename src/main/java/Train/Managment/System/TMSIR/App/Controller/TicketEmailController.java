@@ -15,7 +15,7 @@ public class TicketEmailController {
     @Autowired
     private EmailService emailService;
 
-    @PostMapping("/send-email")
+    /*@PostMapping("/send-email")
     public ResponseEntity<?> sendTicketEmail(@RequestBody Map<String, String> request) {
         String recipientEmail = request.get("email");
 
@@ -33,4 +33,31 @@ public class TicketEmailController {
 
         return ResponseEntity.ok(Map.of("message", "Ticket successfully emailed to " + recipientEmail));
     }
-}
+}*/
+
+    @PostMapping("/send-email")
+    public ResponseEntity<?> sendTicketEmail(@RequestBody Map<String, Object> request) {
+        try {
+            // Safely extract email regardless of nulls
+            String recipientEmail = request.get("email") != null ? request.get("email").toString().trim() : null;
+
+            if (recipientEmail == null || recipientEmail.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
+            }
+
+            // Safely parse other fields with default fallbacks
+            String pnr = request.getOrDefault("pnr", "RR-882190").toString();
+            String trainName = request.getOrDefault("trainName", "Express Train").toString();
+            String source = request.getOrDefault("source", "Origin").toString();
+            String destination = request.getOrDefault("destination", "Destination").toString();
+
+            // Call your email service
+            emailService.sendTicketEmail(recipientEmail, pnr, trainName, source, destination);
+
+            return ResponseEntity.ok(Map.of("message", "Ticket successfully emailed to " + recipientEmail));
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Check your terminal console for the exact stack trace!
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to send email: " + e.getMessage()));
+        }
+    }}
